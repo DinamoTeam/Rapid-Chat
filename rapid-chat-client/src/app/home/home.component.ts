@@ -11,7 +11,8 @@ export class HomeComponent implements OnInit {
   peer: any;
   peerConnectToId: any; // binded with html input
   message: string; // binded with html text area
-  allConnectionsIHave: any[] = [];
+  connectionsIAmConnectedTo: any[] = [];
+  allPeerIdsInRoom: any[] = [];
   constructor() {
 
   }
@@ -26,6 +27,8 @@ export class HomeComponent implements OnInit {
     this.peer.on('connection', conn => {
         // When a peer connect to us, a connection is create and we need to listen to data from that connection
         console.log('A peer with connectionId: ' + conn.peer + ' just connected to me');
+        setTimeout(() => this.sendAllPeerIds(conn), 2000);
+        this.allPeerIdsInRoom.push(conn.peer);
         this.setupListenerForConnection(conn);
       });
 
@@ -41,31 +44,35 @@ export class HomeComponent implements OnInit {
   }
 
   connect() {
+    const conn = this.peer.connect(this.peerConnectToId, {reliable: true}); // peerConnectToId from html input
     console.log('I just connected to peer with id: ' + this.peerConnectToId);
-    const conn = this.peer.connect(this.peerConnectToId); // peerConnectToId from html input
+    this.allPeerIdsInRoom.push(conn.peer);
     this.setupListenerForConnection(conn);
   }
 
   sendMessage() {
     // console.log('I am sending this message: ' + this.message + ' to all connections I have');
     console.log('Me: ' + this.message);
-    this.allConnectionsIHave.forEach(conn => conn.send('1' + this.message)); // 0 is for connection id, 1 is for normal messages
+    this.connectionsIAmConnectedTo.forEach(conn => conn.send('1' + this.message)); // 0 is for connection id, 1 is for normal messages
   }
 
   sendAllPeerIds(conn: any) {
     // console.log('I am sending all peerIds I am connecting with!');
     let allPeerId = '';
-    this.allConnectionsIHave.map(connection => allPeerId += (connection.peer + '\n'));
+    this.allPeerIdsInRoom.forEach(id => allPeerId += (id + '\n'));
+    console.log('I am sending: ');
+    console.log(allPeerId);
     conn.send('0' + allPeerId); // 0 is for connection id, 1 is for normal messages
-    this.allConnectionsIHave.push(conn);
+    this.connectionsIAmConnectedTo.push(conn);
   }
 
   handleMessageFromPeer(message: string, fromConn) {
     // console.log('Message from peer: ' + message);
-    if (message[0] === '0') {
-      // console.log('Handling connection Id');
-      // console.log(message);
-    } else {
+    if (message[0] === '0') { // PeerIds
+      console.log('Received lots of ids: ' + message);
+      const peerIds = message.substr(1, message.length).split('\n');
+      this.allPeerIdsInRoom.concat(peerIds);
+    } else { // normal message
       // console.log('Broadcasting this message to all peers I am connecting with');
       console.log('New message from ' + fromConn.peer + ': ' + message.substring(1, message.length));
       this.broadcastMessageExcept(message, fromConn);
@@ -77,11 +84,21 @@ export class HomeComponent implements OnInit {
   }
 
   broadcastMessageExcept(message: string, exceptConn) {
-    this.allConnectionsIHave.forEach(connection => {
+    this.connectionsIAmConnectedTo.forEach(connection => {
       if (connection.peer !== exceptConn.peer) {
         connection.send(message);
       }
     });
+  }
+
+  getAllPeerIds() {
+    console.log('All peers in room except myself: ');
+    console.log(this.allPeerIdsInRoom);
+  }
+
+  getAllPeersIAmConnectedTo() {
+    console.log('All peers I am connected to: ');
+    console.log(this.connectionsIAmConnectedTo);
   }
 
 }
