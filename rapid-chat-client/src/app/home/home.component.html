@@ -1,3 +1,6 @@
-<h1>My id {{ myid }}</h1>
-<input type="text" [(ngModel)]="anotherid" />
+<h1>My id {{ peer.id }}</h1>
+<input type="text" [(ngModel)]="peerConnectToId" />
 <button type="button" class="btn btn-info" (click)="connect()">Connect</button>
+<br>
+<textarea [(ngModel)]="message"></textarea>
+<button type="button" class="btn btn-success" (click)="sendMessage()">Send</button>
