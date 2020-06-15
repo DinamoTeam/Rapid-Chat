@@ -20,4 +20,9 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="rapid-chat-client\src\app\services\" />
+    <Folder Include="rapid-chat-client\src\app\shared\" />
+  </ItemGroup>
+
 </Project>
