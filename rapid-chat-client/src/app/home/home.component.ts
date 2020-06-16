@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Message, MessageType } from '../shared/Message';
 
 declare const Peer: any;
 
@@ -11,7 +12,7 @@ export class HomeComponent implements OnInit {
   peer: any;
   peerConnectToId: any; // binded with html input
   message: string; // binded with html text area
-  connectionsIAmConnectedTo: any[] = [];
+  connectionsIAmHolding: any[] = [];
   allPeerIdsInRoom: any[] = [];
   constructor() {
 
@@ -21,13 +22,17 @@ export class HomeComponent implements OnInit {
     this.peer = new Peer(); // Create a new peer and connect to peerServer. We can get our id from this.peer.id
 
     // When a connection between peerServer and this peer is first established
-    this.peer.on('open', ourId => console.log('We just connect to peerServer. Our id: ' + ourId));
+    this.peer.on('open', ourId => {
+      console.log('We just connect to peerServer. Our id: ' + ourId);
+      this.allPeerIdsInRoom.push(ourId);
+    });
 
     // Listen to another peer connecting to us
     this.peer.on('connection', conn => {
         // When a peer connect to us, a connection is create and we need to listen to data from that connection
         console.log('A peer with connectionId: ' + conn.peer + ' just connected to me');
-        setTimeout(() => this.sendAllPeerIds(conn), 2000);
+        this.broadcastNewPeerIdExcept(conn.peer, conn);
+        this.connectionsIAmHolding.push(conn);
         this.allPeerIdsInRoom.push(conn.peer);
         this.setupListenerForConnection(conn);
       });
@@ -38,44 +43,38 @@ export class HomeComponent implements OnInit {
   }
 
   setupListenerForConnection(conn: any) {
-    conn.on('open', otherPeerId => this.sendAllPeerIds(conn));  // When the connection first establish
+    conn.on('open', otherPeerId => this.sendAllPeerIdsInRoomForNewUser(conn));  // When the connection first establish
     conn.on('data', message => this.handleMessageFromPeer(message, conn)); // the other peer send us some data
     conn.on('close', () => this.handleConnectionClose()); // either us or the other peer close the connection
   }
 
   connect() {
-    const conn = this.peer.connect(this.peerConnectToId, {reliable: true}); // peerConnectToId from html input
-    console.log('I just connected to peer with id: ' + this.peerConnectToId);
+    const conn = this.peer.connect(this.peerConnectToId, {reliable: true});
+    this.connectionsIAmHolding.push(conn);
     this.allPeerIdsInRoom.push(conn.peer);
+    console.log('I just connected to peer with id: ' + this.peerConnectToId);
     this.setupListenerForConnection(conn);
   }
 
   sendMessage() {
-    // console.log('I am sending this message: ' + this.message + ' to all connections I have');
     console.log('Me: ' + this.message);
-    this.connectionsIAmConnectedTo.forEach(conn => conn.send('1' + this.message)); // 0 is for connection id, 1 is for normal messages
+    const messageToSent = new Message([this.message], MessageType.Message);
+    const messageInJson = JSON.stringify(messageToSent);
+    this.connectionsIAmHolding.forEach(conn => conn.send(messageInJson));
   }
 
-  sendAllPeerIds(conn: any) {
-    // console.log('I am sending all peerIds I am connecting with!');
-    let allPeerId = '';
-    this.allPeerIdsInRoom.forEach(id => allPeerId += (id + '\n'));
-    console.log('I am sending: ');
-    console.log(allPeerId);
-    conn.send('0' + allPeerId); // 0 is for connection id, 1 is for normal messages
-    this.connectionsIAmConnectedTo.push(conn);
-  }
-
-  handleMessageFromPeer(message: string, fromConn) {
-    // console.log('Message from peer: ' + message);
-    if (message[0] === '0') { // PeerIds
-      console.log('Received lots of ids: ' + message);
-      const peerIds = message.substr(1, message.length).split('\n');
-      this.allPeerIdsInRoom.concat(peerIds);
-    } else { // normal message
-      // console.log('Broadcasting this message to all peers I am connecting with');
-      console.log('New message from ' + fromConn.peer + ': ' + message.substring(1, message.length));
-      this.broadcastMessageExcept(message, fromConn);
+  handleMessageFromPeer(messageJson: string, fromConn) {
+    let message: Message = null;
+    message = JSON.parse(messageJson);
+    if (message.messageType === MessageType.PeerId) {
+      const peerIds = message.messages;
+      this.addPeerIdsToListUniquely(peerIds, this.allPeerIdsInRoom);
+    } else if (message.messageType === MessageType.Message) {
+      const messageContent = message.messages[0];
+      console.log(fromConn.peer + ': ' + messageContent);
+      this.broadcastMessageExcept(messageContent, fromConn);
+    } else {
+      throw new Error('Unhandled message type');
     }
   }
 
@@ -83,10 +82,33 @@ export class HomeComponent implements OnInit {
     console.log('A connection is closed');
   }
 
+  sendAllPeerIdsInRoomForNewUser(conn) {
+    const message = new Message(this.allPeerIdsInRoom, MessageType.PeerId);
+    conn.send(JSON.stringify(message));
+  }
+
   broadcastMessageExcept(message: string, exceptConn) {
-    this.connectionsIAmConnectedTo.forEach(connection => {
+    const messageObj = new Message([message], MessageType.Message);
+    this.connectionsIAmHolding.forEach(connection => {
       if (connection.peer !== exceptConn.peer) {
-        connection.send(message);
+        connection.send(JSON.stringify(messageObj));
+      }
+    });
+  }
+
+  broadcastNewPeerIdExcept(newPeerId, exceptConn) {
+    const peerId = new Message([newPeerId], MessageType.PeerId);
+    this.connectionsIAmHolding.forEach(connection => {
+      if (connection !== exceptConn) {
+        connection.send(JSON.stringify(peerId));
+      }
+    });
+  }
+
+  addPeerIdsToListUniquely(peerIdsToAdd: string[], listToAdd: string[]) {
+    peerIdsToAdd.forEach(id => {
+      if (listToAdd.indexOf(id) === -1) {
+        listToAdd.push(id);
       }
     });
   }
@@ -96,9 +118,8 @@ export class HomeComponent implements OnInit {
     console.log(this.allPeerIdsInRoom);
   }
 
-  getAllPeersIAmConnectedTo() {
+  getAllPeerIdsIAmConnectedTo() {
     console.log('All peers I am connected to: ');
-    console.log(this.connectionsIAmConnectedTo);
+    console.log(this.connectionsIAmHolding.map(conn => conn.peer));
   }
-
 }
