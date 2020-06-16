@@ -32,8 +32,8 @@ export class HomeComponent implements OnInit {
         // When a peer connect to us, a connection is create and we need to listen to data from that connection
         console.log('A peer with connectionId: ' + conn.peer + ' just connected to me');
         this.broadcastNewPeerIdExcept(conn.peer, conn);
-        this.connectionsIAmHolding.push(conn);
-        this.allPeerIdsInRoom.push(conn.peer);
+        this.addConnectionToListUniquely([conn], this.connectionsIAmHolding);
+        this.addPeerIdsToListUniquely([conn.peer], this.allPeerIdsInRoom);
         this.setupListenerForConnection(conn);
       });
 
@@ -50,15 +50,15 @@ export class HomeComponent implements OnInit {
 
   connect() {
     const conn = this.peer.connect(this.peerConnectToId, {reliable: true});
-    this.connectionsIAmHolding.push(conn);
-    this.allPeerIdsInRoom.push(conn.peer);
+    this.addConnectionToListUniquely([conn], this.connectionsIAmHolding);
+    this.addPeerIdsToListUniquely([conn.peer], this.allPeerIdsInRoom);
     console.log('I just connected to peer with id: ' + this.peerConnectToId);
     this.setupListenerForConnection(conn);
   }
 
   sendMessage() {
     console.log('Me: ' + this.message);
-    const messageToSent = new Message([this.message], MessageType.Message);
+    const messageToSent = new Message([this.message], MessageType.Message, this.peer.id);
     const messageInJson = JSON.stringify(messageToSent);
     this.connectionsIAmHolding.forEach(conn => conn.send(messageInJson));
   }
@@ -69,10 +69,11 @@ export class HomeComponent implements OnInit {
     if (message.messageType === MessageType.PeerId) {
       const peerIds = message.messages;
       this.addPeerIdsToListUniquely(peerIds, this.allPeerIdsInRoom);
+      this.broadcastPeerIdExcept(messageJson, fromConn);
     } else if (message.messageType === MessageType.Message) {
       const messageContent = message.messages[0];
-      console.log(fromConn.peer + ': ' + messageContent);
-      this.broadcastMessageExcept(messageContent, fromConn);
+      console.log(message.peerId + ': ' + messageContent);
+      this.broadcastMessageExcept(messageJson, fromConn);
     } else {
       throw new Error('Unhandled message type');
     }
@@ -83,24 +84,31 @@ export class HomeComponent implements OnInit {
   }
 
   sendAllPeerIdsInRoomForNewUser(conn) {
-    const message = new Message(this.allPeerIdsInRoom, MessageType.PeerId);
+    const message = new Message(this.allPeerIdsInRoom, MessageType.PeerId, this.peer.id);
     conn.send(JSON.stringify(message));
   }
 
-  broadcastMessageExcept(message: string, exceptConn) {
-    const messageObj = new Message([message], MessageType.Message);
+  broadcastMessageExcept(messageJson: string, exceptConn) {
     this.connectionsIAmHolding.forEach(connection => {
       if (connection.peer !== exceptConn.peer) {
-        connection.send(JSON.stringify(messageObj));
+        connection.send(messageJson);
       }
     });
   }
 
   broadcastNewPeerIdExcept(newPeerId, exceptConn) {
-    const peerId = new Message([newPeerId], MessageType.PeerId);
+    const peerId = new Message([newPeerId], MessageType.PeerId, this.peer.id);
     this.connectionsIAmHolding.forEach(connection => {
       if (connection !== exceptConn) {
         connection.send(JSON.stringify(peerId));
+      }
+    });
+  }
+
+  broadcastPeerIdExcept(peerIdJson, exceptConn) {
+    this.connectionsIAmHolding.forEach(connection => {
+      if (connection !== exceptConn) {
+        connection.send(peerIdJson);
       }
     });
   }
@@ -111,6 +119,14 @@ export class HomeComponent implements OnInit {
         listToAdd.push(id);
       }
     });
+  }
+
+  addConnectionToListUniquely(conn: any[], listToAdd: any[]) {
+    conn.forEach(connection => {
+      if (listToAdd.indexOf(connection) === -1) {
+        listToAdd.push(connection);
+      }
+    })
   }
 
   getAllPeerIds() {
