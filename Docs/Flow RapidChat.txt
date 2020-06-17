@@ -1,0 +1,72 @@
+1.	Useful functions:
+	1.1	Peer.on:
+		peer.on('open', func(myId)=>{}): Được trigger khi vừa connect thành công tới peer-server. Ko cần chờ function này để có thể connect với các user khác
+		peer.on('connection', func(dataConnection)=>{}): Được trigger khi có 1 thằng đòi connect với mình (Chỉ bên bị đòi connect thì even này mới bị trigger)
+		Other: 'close', 'disconnected',...
+		
+	1.2	DataConnection.on (viết ngắn là conn.on)
+		conn.on('data', func(data)=>{}): Được trigger khi nhận được data send tới từ 1 peer
+		conn.on('open', func()=>{}): Được trigger ở cả 2 peer khi connection open
+		Other: 'close', 'error'
+		
+		
+2.	Flow
+
+	U1 -------- U2
+	|
+	|
+	|
+	U3			U4
+	
+	Context: - U1, U2, U3 đang ở trong room. U4 nhảy vào, quyết định connect với U2
+			 - Trong ts file của mỗi User có: 
+				+ peer: peer object của bản thân. Có thể access peer.id
+				+ connectionsIAmHolding: Ví dụ U3 thì có conn với U1, U1 thì có conn với U3 và U2
+				+ allPeerIdsInRoom
+				+ previousMessages
+				+ Chú ý: connections (conn) khác peerId. Có thể lấy peerId của 'đối phương' bằng conn.peer
+				
+	2.1 Khi một user bật browser lên:
+		- Connect tới server: this.peer = new Peer()
+		- Khi connect đc với server rồi lấy id server đưa vào allPeerIdsInRoom, đồng thời set up listener peer.on('connection')
+		
+	2.2	Khi U4 vừa vào phòng (Bằng cách send conn request cho U2):
+		- U4 send conn request cho U2. U4 và U2 set up listener (xem 1.2)
+		- Khi connection giữa U2 và U4 được open: conn.on('open')
+			+ U2 và U4 tự add người kia vào connectionsIAmHolding
+			+ U2 nhận ra mình là 'old user' vì (allPeerIdsInRoom.length > 1 || previousMessages.length != 0). 
+				Vì vậy U2 send allPeerIdsInRoom và previousMessages cho U4
+			+ U4 nhận ra mình là 'new user' vì (allPeerIdsInRoom.length == 1 && previousMessages.length == 0)
+				Vì vậy U4 ko làm gì hết
+			+ U2 và U4 add id của nhau vào allPeerIdsInRoom
+			+ U2 broadcast id mới (U4) cho các user khác
+		- Lúc này, U4 đã có tất cả các messages cũ. U1,2,3,4 đều có đủ id trong allPeerIdsInRoom, và connectionsIAmHolding cũng có đủ connections
+		
+	2.3	Khi 1 user (U4) nhận được allPeerIds / allMessages:
+		- Lưu lại allPeerIds vào allPeerIdsInRoom
+		- Print allMessages ra
+		
+	2.4	Khi 1 user nhận được 1 newId (id của thằng mới vào phòng):
+		- Add newId vào allPeerIdsInRoom
+		- Broadcast cho các connection của mình - connectionsIAmHolding (except cái connection vừa gửi newId cho mình)
+		
+	2.5 Khi 1 user send message:
+		- Broadcast message đấy ra cho tất cả các connection trong connectionsIAmHolding
+	
+	2.6 Khi 1 user nhận message:
+		- Print message lên màn hình
+		- Broadcast cho tất cả các connection trong connectionsIAmHolding (except cái connection vừa gửi)
+			 
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
