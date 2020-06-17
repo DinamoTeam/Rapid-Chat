@@ -118,7 +118,7 @@ export class PeerService {
         console.log(message.peerId + ": " + messageContent);
         this.previousMessages.push(message);
         this.broadcastMessageExcept(messageJson, fromConn);
-        this.messageReceived.emit("NEW MESS");
+        this.messageReceived.emit("UPDATE MESSAGES");
         break;
       case MessageType.AllMessages:
         const messages: Message[] = JSON.parse(message.messages[0]);
@@ -128,6 +128,7 @@ export class PeerService {
           console.log(mes.peerId + ": " + mes.messages[0]);
         });
         this.broadcastMessageExcept(messageJson, fromConn);
+        this.messageReceived.emit("UPDATE MESSAGES");
         break;
       default:
         throw new Error("Unhandled message type");

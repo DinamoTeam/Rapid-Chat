@@ -32,7 +32,7 @@ export class HomeComponent implements OnInit {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
     this.peerService.messageReceived.subscribe((message: any) => {
       this.ngZone.run(() => {
-        if (message === "NEW MESS") {
+        if (message === "UPDATE MESSAGES") {
           this.messages = this.peerService.previousMessages;
         }
       });
