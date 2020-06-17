@@ -46,6 +46,7 @@ export class HomeComponent implements OnInit {
   sendMessage() {
     console.log('Me: ' + this.messageToSend);
     this.peerService.sendMessage(this.messageToSend);
+    this.messages = this.peerService.previousMessages;
   }
 
   getAllPeerIds() {
