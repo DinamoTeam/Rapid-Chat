@@ -9,10 +9,10 @@ declare const Peer: any;
 export class PeerService {
   private peer: any;
   connectionEstablished = new EventEmitter<Boolean>();
-  connectionsIAmHolding: any[] = [];
-  allPeerIdsInRoom: any[] = [];
+  private connectionsIAmHolding: any[] = [];
+  private allPeerIdsInRoom: any[] = [];
   messageReceived = new EventEmitter<any>();
-  previousMessages: Message[] = [];
+  private previousMessages: Message[] = [];
 
   constructor() {
     this.peer = new Peer(); // Create a new peer and connect to peerServer. We can get our id from this.peer.id
@@ -162,5 +162,17 @@ export class PeerService {
 
   getPeerId(): string {
     return this.peer.id;
+  }
+
+  getAllMessages(): any[] {
+    return this.previousMessages;
+  }
+
+  getAllPeerIds(): any[] {
+    return this.allPeerIdsInRoom;
+  }
+
+  getAllPeersConnectTo() {
+    console.log(this.connectionsIAmHolding.map(conn => conn.peer));
   }
 }

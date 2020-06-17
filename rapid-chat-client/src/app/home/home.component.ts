@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit {
     this.peerService.messageReceived.subscribe((message: any) => {
       this.ngZone.run(() => {
         if (message === "UPDATE MESSAGES") {
-          this.messages = this.peerService.previousMessages;
+          this.messages = this.peerService.getAllMessages();
         }
       });
     });
@@ -46,21 +46,21 @@ export class HomeComponent implements OnInit {
   sendMessage() {
     console.log('Me: ' + this.messageToSend);
     this.peerService.sendMessage(this.messageToSend);
-    this.messages = this.peerService.previousMessages;
+    this.messages = this.peerService.getAllMessages();
   }
 
   getAllPeerIds() {
     console.log('All peers in room except myself: ');
-    console.log(this.peerService.allPeerIdsInRoom);
+    console.log(this.peerService.getAllPeerIds());
   }
 
   getAllPeerIdsIAmConnectedTo() {
     console.log('All peers I am connected to: ');
-    console.log(this.peerService.connectionsIAmHolding.map(conn => conn.peer));
+    console.log(this.peerService.getAllPeersConnectTo());
   }
 
   getPreviousMessages() {
     console.log('Previous messages: ');
-    console.log(this.peerService.previousMessages);
+    console.log(this.peerService.getAllMessages());
   }
 }
