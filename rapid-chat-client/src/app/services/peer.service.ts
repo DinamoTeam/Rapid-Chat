@@ -118,6 +118,7 @@ export class PeerService {
         console.log(message.peerId + ": " + messageContent);
         this.previousMessages.push(message);
         this.broadcastMessageExcept(messageJson, fromConn);
+        this.messageReceived.emit("NEW MESS");
         break;
       case MessageType.AllMessages:
         const messages: Message[] = JSON.parse(message.messages[0]);

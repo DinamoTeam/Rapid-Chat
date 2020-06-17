@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { Message, MessageType } from '../shared/Message';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { PeerService } from '../services/peer.service';
 
 declare const Peer: any;
@@ -11,10 +10,11 @@ declare const Peer: any;
 })
 export class HomeComponent implements OnInit {
   peerConnectToId: any; // binded with html input
-  message: string; // binded with html text area
+  messageToSend: string; // binded with html text area
   myPeerId: string;
+  messages: any[] = []
 
-  constructor(private peerService: PeerService) {
+  constructor(private peerService: PeerService, private ngZone: NgZone) {
     this.peerService.connectionEstablished.subscribe(
       (successful: boolean) => {
         if (successful) {
@@ -25,11 +25,18 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit() {
-    //this.subscribeToPeerServerEvents();
+    this.subscribeToPeerServerEvents();
   }
 
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
+    this.peerService.messageReceived.subscribe((message: any) => {
+      this.ngZone.run(() => {
+        if (message === "NEW MESS") {
+          this.messages = this.peerService.previousMessages;
+        }
+      });
+    });
   }
 
   connect() {
@@ -37,8 +44,8 @@ export class HomeComponent implements OnInit {
   }
 
   sendMessage() {
-    console.log('Me: ' + this.message);
-    this.peerService.sendMessage(this.message);
+    console.log('Me: ' + this.messageToSend);
+    this.peerService.sendMessage(this.messageToSend);
   }
 
   getAllPeerIds() {

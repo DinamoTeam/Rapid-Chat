@@ -8,12 +8,14 @@ import { RouterModule } from '@angular/router';
 
 import { HomeComponent } from './home/home.component';
 import { HeaderComponent } from './header/header.component';
+import { MessageBubbleComponent } from './message-bubble/message-bubble.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    HeaderComponent
+    HeaderComponent,
+    MessageBubbleComponent
   ],
   imports: [
     BrowserModule,
