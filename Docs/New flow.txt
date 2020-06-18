@@ -1,0 +1,63 @@
+1.	Useful functions:
+	1.1	Peer.on:
+		peer.on('open', func(myId)=>{}): Được trigger khi vừa connect thành công tới peer-server. Ko cần chờ function này để có thể connect với các user khác
+		peer.on('connection', func(dataConnection)=>{}): Được trigger khi có 1 thằng đòi connect với mình (Chỉ bên bị đòi connect thì even này mới bị trigger)
+		Other: 'close', 'disconnected',...
+		
+	1.2	DataConnection.on (viết ngắn là conn.on)
+		conn.on('data', func(data)=>{}): Được trigger khi nhận được data send tới từ 1 peer
+		conn.on('open', func()=>{}): Được trigger ở cả 2 peer khi connection open
+		Other: 'close', 'error'
+		
+		
+2.	New Flow
+
+	U1 -------- U2
+	|         /
+	|      /  
+	|   /
+	U3			U4
+	
+	Context: - U1, U2, U3 đang ở trong room. U4 nhảy vào, connect với U2 để retrieve oldMessages rồi sau đó connect nốt với U1 và U3
+			 - Trong ts file của mỗi User có: 
+				+ peer: peer object của bản thân. Có thể access peer.id
+				+ connectionsIAmHolding: Connections tới tất cả các peer còn lại
+				+ previousMessages
+				+ Chú ý: connections (conn) khác peerId. Có thể lấy peerId của 'đối phương' bằng conn.peer
+				
+	2.1 Khi một user bật browser lên:
+		- Connect tới peerjs server: this.peer = new Peer()
+		
+	2.2	Khi U4 vừa vào phòng (Bằng roomName ở trong đường link)
+		- U4 send GET request cho C# server để lấy list peerId đang trong phòng
+		- U4 send id của mình cho C# Server để C# lưu lại trong Peer table. Nếu là room mới thì C# tạo new room trong Room table luôn
+		- Lúc này U4 sẽ cầm trong tay 1 list peerId trong room (lấy từ C# server)
+			+ Nếu list này empty thì U4 là thằng duy nhất trong phòng => Do nothing
+			+ Nếu list này có users rồi
+				U4 chọn 1 thằng, connect với nó và requestOldMessages() từ thằng đó
+				Sau khi nhận được oldMessages rồi, U4 sẽ connect với các thằng còn lại
+		
+		- Khi 1 thằng nhận đc connection request từ U4: Add ngay U4 vào connectionsIAmHolding
+		- Khi 1 thằng nhận được oldMessages request từ U4: sendOldMessages() cho U4
+		
+	2.3	Khi 1 user (U4) nhận được allMessages:
+		- Print allMessages ra, và add đống messages này vào previousMessages
+		
+	2.5 Khi 1 user send message:
+		- Send message đấy cho tất cả các connection trong connectionsIAmHolding
+	
+	2.6 Khi 1 user nhận message:
+		- Print message lên màn hình, và add vào previousMessages
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
