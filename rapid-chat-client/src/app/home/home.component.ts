@@ -2,8 +2,6 @@ import { Component, OnInit, NgZone } from "@angular/core";
 import { PeerService } from "../services/peer.service";
 import { ActivatedRoute } from "@angular/router";
 
-declare const Peer: any;
-
 @Component({
   selector: "app-home",
   templateUrl: "./home.component.html",

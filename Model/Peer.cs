@@ -8,8 +8,8 @@ namespace Rapid_Chat.Model
         public Room Room { get; set; }
         public Peer(string peerId, string roomName)
         {
-            this.PeerId = peerId;
-            this.RoomName = roomName;
+            PeerId = peerId;
+            RoomName = roomName;
         }
     }
 }

@@ -28,16 +28,25 @@ namespace Rapid_Chat.Controllers
                                         .ToListAsync();
         }
 
-        // GET: api/Room/CreateNewRoom
+        // GET: api/Room/JoinNewRoom?peerId=abc
         [HttpGet]
-        public async Task<ActionResult<string>> CreateNewRoom()
+        public async Task<ActionResult<string>> JoinNewRoom(string peerId)
 		{
             string roomName = GenerateRoomName();
             _database.rooms.Add(new Room(roomName));
+            _database.peers.Add(new Peer(peerId, roomName));
             await _database.SaveChangesAsync();
 
             return roomName;
 		}
+
+        // Get: api/Room/JoinExistingRoom?peerId=abc&roomName=def
+        [HttpGet]
+        public async Task JoinExistingRoom(string peerId, string roomName)
+		{
+            _database.peers.Add(new Peer(peerId, roomName));
+            await _database.SaveChangesAsync();
+        }
 
 
         private string GenerateRoomName()
