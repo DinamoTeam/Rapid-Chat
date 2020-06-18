@@ -175,4 +175,12 @@ export class PeerService {
   getAllPeersConnectTo() {
     console.log(this.connectionsIAmHolding.map(conn => conn.peer));
   }
+
+  createNewRoom() {
+    // TODO
+  }
+
+  joinExistingRoom(roomName: string) {
+    // TODO
+  }
 }
