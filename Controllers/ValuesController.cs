@@ -21,8 +21,8 @@ namespace RapidChat.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-			var data = _database.Values.FirstOrDefault();
-            return Ok(data);
+            string message = "The server is ready to serve you";
+			return Ok(message);
         }
 
         // GET api/values/5
