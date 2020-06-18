@@ -49,10 +49,6 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  connect() {
-    this.peerService.connectToPeer(this.peerConnectToId);
-  }
-
   sendMessage() {
     console.log("Me: " + this.messageToSend);
     this.peerService.sendMessage(this.messageToSend);
@@ -60,13 +56,8 @@ export class HomeComponent implements OnInit {
   }
 
   getAllPeerIds() {
-    console.log("All peers in room except myself: ");
-    console.log(this.peerService.getAllPeerIds());
-  }
-
-  getAllPeerIdsIAmConnectedTo() {
     console.log("All peers I am connected to: ");
-    console.log(this.peerService.getAllPeersConnectTo());
+    console.log(this.peerService.getAllPeerIds());
   }
 
   getPreviousMessages() {

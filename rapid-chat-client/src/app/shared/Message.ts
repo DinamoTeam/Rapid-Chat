@@ -10,8 +10,7 @@ export class Message {
 }
 
 export const enum MessageType {
-  PeerId = 0,
-  Message = 1,
-  AllPeerIds = 2,
-  AllMessages = 3
+  Message = 0,
+  AllMessages = 1,
+  RequestAllMessages = 2
 }

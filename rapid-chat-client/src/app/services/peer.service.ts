@@ -8,9 +8,9 @@ declare const Peer: any;
 })
 export class PeerService {
   private peer: any;
+  private connToGetOldMessages: any;
   connectionEstablished = new EventEmitter<Boolean>();
   private connectionsIAmHolding: any[] = [];
-  private allPeerIdsInRoom: any[] = [];
   messageReceived = new EventEmitter<any>();
   private previousMessages: Message[] = [];
 
@@ -25,7 +25,6 @@ export class PeerService {
     this.peer.on("open", (myId) => {
       console.log("I have connected to peerServer. My id: " + myId);
       this.connectionEstablished.emit(true);
-      this.allPeerIdsInRoom.push(myId);
     });
   }
 
@@ -44,13 +43,20 @@ export class PeerService {
     });
   }
 
-  connectToPeer(otherPeerId: any) {
+  connectToPeer(otherPeerId: any, getOldMessages: boolean) {
     const conn = this.peer.connect(otherPeerId, { reliable: true });
+    this.addUnique([conn], this.connectionsIAmHolding);
+    if (getOldMessages === true) {
+      this.connToGetOldMessages = conn;
+    }
     console.log("I just connected to peer with id: " + otherPeerId);
     this.setupListenerForConnection(conn);
   }
 
   sendMessage(mess: string) {
+    if (mess.length === 0) {
+      return;
+    }
     const messageToSend = new Message(
       [mess],
       MessageType.Message,
@@ -64,29 +70,19 @@ export class PeerService {
   private setupListenerForConnection(conn: any) {
     conn.on("open", (otherPeerId) => this.handlePeerConnectionFirstOpen(conn)); // When the connection first establish
     conn.on("data", (message) => this.handleMessageFromPeer(message, conn)); // the other peer send us some data
-    conn.on("close", () => this.handleConnectionClose()); // either us or the other peer close the connection
+    conn.on("close", () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
   }
 
   private handlePeerConnectionFirstOpen(conn: any) {
-    this.addUnique([conn.peer], this.allPeerIdsInRoom);
     this.addUnique([conn], this.connectionsIAmHolding);
-
-    if (this.isOldUser()) {
-      this.sendAllPeerIdsInRoomToNewUser(conn);
-      this.sendOldMessages(conn);
-      const newPeerIdJson = JSON.stringify(
-        new Message([conn.peer], MessageType.PeerId, null)
-      );
-      this.broadcastMessageExcept(newPeerIdJson, conn);
+    // If we chose this peer to give us all messages
+    if (this.connToGetOldMessages === conn) {
+      this.requestOldMessages(conn);
     }
   }
 
-  private sendAllPeerIdsInRoomToNewUser(conn) {
-    const message = new Message(
-      this.allPeerIdsInRoom,
-      MessageType.PeerId,
-      this.peer.id
-    );
+  private requestOldMessages(conn: any) {
+    const message = new Message(null, MessageType.RequestAllMessages, null);
     conn.send(JSON.stringify(message));
   }
 
@@ -100,24 +96,13 @@ export class PeerService {
   }
 
   private handleMessageFromPeer(messageJson: string, fromConn: any) {
-    let message: Message = null;
-    message = JSON.parse(messageJson);
+    const message: Message = JSON.parse(messageJson);
 
     switch (message.messageType) {
-      case MessageType.PeerId:
-        const peerId = message.messages;
-        this.addUnique(peerId, this.allPeerIdsInRoom);
-        this.broadcastMessageExcept(messageJson, fromConn);
-        break;
-      case MessageType.AllPeerIds:
-        const peerIds = message.messages;
-        this.addUnique(peerIds, this.allPeerIdsInRoom);
-        break;
       case MessageType.Message:
         const messageContent: string = message.messages[0];
         console.log(message.peerId + ": " + messageContent);
         this.previousMessages.push(message);
-        this.broadcastMessageExcept(messageJson, fromConn);
         this.messageReceived.emit("UPDATE MESSAGES");
         break;
       case MessageType.AllMessages:
@@ -127,28 +112,24 @@ export class PeerService {
         messages.forEach((mes) => {
           console.log(mes.peerId + ": " + mes.messages[0]);
         });
-        this.broadcastMessageExcept(messageJson, fromConn);
         this.messageReceived.emit("UPDATE MESSAGES");
+        break;
+      case MessageType.RequestAllMessages:
+        this.sendOldMessages(fromConn);
         break;
       default:
         throw new Error("Unhandled message type");
     }
   }
 
-  private broadcastMessageExcept(messageJson: string, exceptConn: any) {
-    this.connectionsIAmHolding.forEach((connection) => {
-      if (connection.peer !== exceptConn.peer) {
-        connection.send(messageJson);
-      }
-    });
-  }
-
-  private handleConnectionClose() {
-    console.log("A connection is closed");
-  }
-
-  private isOldUser(): boolean {
-    return this.allPeerIdsInRoom.length > 2 || this.previousMessages.length > 0;
+  private handleConnectionClose(conn) {
+    console.log(
+      "Connection to " +
+        conn.peer +
+        " is closed. It will be deleted in the connectionsIAmHolding list!"
+    );
+    const index = this.connectionsIAmHolding.findIndex(connection => connection === conn);
+    this.connectionsIAmHolding.splice(index, 1);
   }
 
   private addUnique(list: any[], listToBeAddedTo: any[]) {
@@ -168,19 +149,36 @@ export class PeerService {
     return this.previousMessages;
   }
 
-  getAllPeerIds(): any[] {
-    return this.allPeerIdsInRoom;
+  getAllPeerIds() {
+    console.log(this.connectionsIAmHolding.map((conn) => conn.peer));
   }
 
-  getAllPeersConnectTo() {
-    console.log(this.connectionsIAmHolding.map(conn => conn.peer));
+  handleFirstJoinRoom(peerIds: any[]) {
+    if (peerIds.length === 0) {
+      // DO NOTHING
+      console.log("I am the first one in this room");
+    } else {
+      this.connectToPeer(peerIds[0], true);
+      // Đáng nhẽ phải để this.peer nhận xong old messages từ peerIds[0] rồi mới connect với các peer còn lại
+      // Cơ mà connect luôn for testing purposes
+      for (let i = 1; i < peerIds.length; i++) {
+        this.connectToPeer(peerIds[1], false);
+      }
+    }
   }
 
   createNewRoom() {
     // TODO
+
+    // No peerId
+    this.handleFirstJoinRoom([]);
   }
 
   joinExistingRoom(roomName: string) {
     // TODO
+
+    // Get peerIds in room
+    const peerIds: any[] = null;
+    this.handleFirstJoinRoom(peerIds);
   }
 }
