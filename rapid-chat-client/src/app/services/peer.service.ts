@@ -1,5 +1,6 @@
 import { EventEmitter, Injectable } from "@angular/core";
 import { Message, MessageType } from "../shared/Message";
+import { RoomService } from "./room.service";
 
 declare const Peer: any;
 
@@ -8,13 +9,14 @@ declare const Peer: any;
 })
 export class PeerService {
   private peer: any;
+  private roomName: string;
   private connToGetOldMessages: any;
   connectionEstablished = new EventEmitter<Boolean>();
   private connectionsIAmHolding: any[] = [];
   messageReceived = new EventEmitter<any>();
   private previousMessages: Message[] = [];
 
-  constructor() {
+  constructor(private roomService: RoomService) {
     this.peer = new Peer(); // Create a new peer and connect to peerServer. We can get our id from this.peer.id
     this.connectToPeerServer();
     this.registerConnectToMeEvent();
@@ -128,7 +130,9 @@ export class PeerService {
         conn.peer +
         " is closed. It will be deleted in the connectionsIAmHolding list!"
     );
-    const index = this.connectionsIAmHolding.findIndex(connection => connection === conn);
+    const index = this.connectionsIAmHolding.findIndex(
+      (connection) => connection === conn
+    );
     this.connectionsIAmHolding.splice(index, 1);
   }
 
@@ -168,7 +172,9 @@ export class PeerService {
   }
 
   createNewRoom() {
-    // TODO
+    this.roomService.getNewRoomName().subscribe((data: string) => {
+      this.roomName = data;
+    });
 
     // No peerId
     this.handleFirstJoinRoom([]);
