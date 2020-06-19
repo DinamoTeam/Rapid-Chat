@@ -13,7 +13,7 @@ export class PeerService {
   private connToGetOldMessages: any;
   connectionEstablished = new EventEmitter<Boolean>();
   private connectionsIAmHolding: any[] = [];
-  messageReceived = new EventEmitter<any>();
+  infoBroadcasted = new EventEmitter<any>();
   private previousMessages: Message[] = [];
 
   constructor(private roomService: RoomService) {
@@ -24,14 +24,14 @@ export class PeerService {
   }
 
   private connectToPeerServer() {
-    this.peer.on("open", (myId) => {
+    this.peer.on(PeerServer.Open, (myId) => {
       console.log("I have connected to peerServer. My id: " + myId);
       this.connectionEstablished.emit(true);
     });
   }
 
   private registerConnectToMeEvent() {
-    this.peer.on("connection", (conn) => {
+    this.peer.on(PeerServer.Connection, (conn) => {
       console.log(
         "A peer with connectionId: " + conn.peer + " have just connected to me"
       );
@@ -40,7 +40,7 @@ export class PeerService {
   }
 
   private reconnectToPeerServer() {
-    this.peer.on("disconnected", () => {
+    this.peer.on(PeerServer.Disconnected, () => {
       setTimeout(() => this.peer.reconnect(), 3000);
     });
   }
@@ -70,9 +70,9 @@ export class PeerService {
   }
 
   private setupListenerForConnection(conn: any) {
-    conn.on("open", (otherPeerId) => this.handlePeerConnectionFirstOpen(conn)); // When the connection first establish
-    conn.on("data", (message) => this.handleMessageFromPeer(message, conn)); // the other peer send us some data
-    conn.on("close", () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
+    conn.on(PeerServer.Open, (otherPeerId) => this.handlePeerConnectionFirstOpen(conn)); // When the connection first establish
+    conn.on(PeerServer.Data, (message) => this.handleMessageFromPeer(message, conn)); // the other peer send us some data
+    conn.on(PeerServer.Close, () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
   }
 
   private handlePeerConnectionFirstOpen(conn: any) {
@@ -107,7 +107,7 @@ export class PeerService {
         const messageContent: string = message.messages[0];
         console.log(message.peerId + ": " + messageContent);
         this.previousMessages.push(message);
-        this.messageReceived.emit("UPDATE MESSAGES");
+        this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         break;
       case MessageType.AllMessages:
         console.log('Received old messages!');
@@ -117,7 +117,7 @@ export class PeerService {
         messages.forEach((mes) => {
           console.log(mes.peerId + ": " + mes.messages[0]);
         });
-        this.messageReceived.emit("UPDATE MESSAGES");
+        this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         break;
       case MessageType.RequestAllMessages:
         console.log(fromConn.peer + ' just asked me to give him all messages');
@@ -185,7 +185,7 @@ export class PeerService {
       console.log("roomName: " + this.roomName);
       // No peerId
       this.handleFirstJoinRoom([]);
-      this.messageReceived.emit("RoomName");
+      this.infoBroadcasted.emit(BroadcastInfo.RoomName);
     });
 
     
@@ -203,4 +203,17 @@ export class PeerService {
       }
     );
   }
+}
+
+export const enum PeerServer {
+  Open = 'open',
+  Close = 'close',
+  Connection = 'connection',
+  Data = 'data',
+  Disconnected = 'disconnected'
+}
+
+export const enum BroadcastInfo {
+  UpdateAllMessages = 0,
+  RoomName = 1
 }

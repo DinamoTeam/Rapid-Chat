@@ -1,5 +1,5 @@
 import { Component, OnInit, NgZone } from "@angular/core";
-import { PeerService } from "../services/peer.service";
+import { PeerService, BroadcastInfo } from "../services/peer.service";
 import { ActivatedRoute } from "@angular/router";
 import { Location } from '@angular/common';
 
@@ -40,11 +40,11 @@ export class HomeComponent implements OnInit {
 
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
-    this.peerService.messageReceived.subscribe((message: any) => {
+    this.peerService.infoBroadcasted.subscribe((message: any) => {
       this.ngZone.run(() => {
-        if (message === "UPDATE MESSAGES") {
+        if (message === BroadcastInfo.UpdateAllMessages) {
           this.messages = this.peerService.getAllMessages();
-        } else if (message == "RoomName") {
+        } else if (message == BroadcastInfo.RoomName) {
           this.roomName = this.peerService.getRoomName();
           this.location.replaceState('/' + this.roomName);
         }
