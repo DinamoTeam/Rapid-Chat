@@ -1,6 +1,7 @@
 import { Component, OnInit, NgZone } from "@angular/core";
 import { PeerService } from "../services/peer.service";
 import { ActivatedRoute } from "@angular/router";
+import { Location } from '@angular/common';
 
 @Component({
   selector: "app-home",
@@ -17,7 +18,8 @@ export class HomeComponent implements OnInit {
   constructor(
     private peerService: PeerService,
     private ngZone: NgZone,
-    private actRoute: ActivatedRoute
+    private actRoute: ActivatedRoute,
+    private location: Location
   ) {
     this.peerService.connectionEstablished.subscribe((successful: boolean) => {
       if (successful) {
@@ -42,6 +44,9 @@ export class HomeComponent implements OnInit {
       this.ngZone.run(() => {
         if (message === "UPDATE MESSAGES") {
           this.messages = this.peerService.getAllMessages();
+        } else if (message == "RoomName") {
+          this.roomName = this.peerService.getRoomName();
+          this.location.replaceState('/' + this.roomName);
         }
       });
     });

@@ -153,6 +153,10 @@ export class PeerService {
     return this.peer.id;
   }
 
+  getRoomName(): string {
+    return this.roomName;
+  }
+
   getAllMessages(): any[] {
     return this.previousMessages;
   }
@@ -181,7 +185,10 @@ export class PeerService {
       console.log("roomName: " + this.roomName);
       // No peerId
       this.handleFirstJoinRoom([]);
+      this.messageReceived.emit("RoomName");
     });
+
+    
   }
 
   joinExistingRoom(roomName: string) {
