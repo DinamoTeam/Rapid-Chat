@@ -27,6 +27,11 @@ namespace RapidChat
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
+			/*services.AddCors(o => o.AddPolicy("CorsPolicy", builder =>
+			{
+				builder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().WithOrigins("http://localhost:4200");
+			}));*/
+			services.AddCors();
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 			services.AddDbContext<DataContext>(x => x.UseSqlite(
 				Configuration.GetConnectionString("DefaultConnection")
@@ -45,6 +50,7 @@ namespace RapidChat
 				app.UseHsts();
 			}
 
+			app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 			app.UseHttpsRedirection();
 			app.UseMvc();
 		}

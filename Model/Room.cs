@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Rapid_Chat.Model
@@ -6,10 +7,12 @@ namespace Rapid_Chat.Model
     {
         [Key]
         public string RoomName { get; set; }
-        public Peer[] peers { get; set; }
+        public ICollection<Peer> peers { get; set; }
         public Room(string roomName)
         {
             this.RoomName = roomName;
         }
+
+        public Room() {}
     }
 }

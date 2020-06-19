@@ -11,5 +11,7 @@ namespace Rapid_Chat.Model
             PeerId = peerId;
             RoomName = roomName;
         }
+
+        public Peer() {}
     }
 }

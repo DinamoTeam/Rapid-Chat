@@ -174,10 +174,9 @@ export class PeerService {
   createNewRoom() {
     this.roomService.joinNewRoom(this.peer.id).subscribe((data: string) => {
       this.roomName = data;
+      // No peerId
+      this.handleFirstJoinRoom([]);
     });
-
-    // No peerId
-    this.handleFirstJoinRoom([]);
   }
 
   joinExistingRoom(roomName: string) {
