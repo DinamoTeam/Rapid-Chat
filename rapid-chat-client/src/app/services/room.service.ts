@@ -14,13 +14,15 @@ export class RoomService {
   // HttpClient API get() -> Create new room and return the room name
   joinNewRoom(peerId: string): Observable<string> {
     return this.http
-      .get<string>(this.apiURL + "JoinNewRoom?peerId=" + peerId)
+      .get(this.apiURL + "JoinNewRoom?peerId=" + peerId, {
+        responseType: "text",
+      })
       .pipe(retry(1), catchError(this.handleError));
   }
 
   // HttpClient API get() -> Join existing room
-  joinExistingRoom(peerId: string, roomName: string) {
-    this.http
+  joinExistingRoom(peerId: string, roomName: string): Observable<any> {
+    return this.http
       .get(
         this.apiURL +
           "JoinExistingRoom?peerId=" +

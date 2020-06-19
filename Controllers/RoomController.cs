@@ -11,7 +11,7 @@ namespace Rapid_Chat.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class RoomController
+    public class RoomController: ControllerBase
     {
         private readonly DataContext _database;
         public RoomController(DataContext database)
@@ -42,10 +42,14 @@ namespace Rapid_Chat.Controllers
 
         // Get: api/Room/JoinExistingRoom?peerId=abc&roomName=def
         [HttpGet]
-        public async Task JoinExistingRoom(string peerId, string roomName)
+        public async Task<IActionResult> JoinExistingRoom(string peerId, string roomName)
 		{
+            var peerIds = _database.peers.Where(p => p.RoomName == roomName)
+                                         .Select(p => p.PeerId)
+                                         .ToListAsync();
             _database.peers.Add(new Peer(peerId, roomName));
             await _database.SaveChangesAsync();
+            return Ok(peerIds);
         }
 
 

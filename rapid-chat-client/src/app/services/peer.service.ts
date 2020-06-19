@@ -94,6 +94,8 @@ export class PeerService {
       MessageType.AllMessages,
       null
     );
+    console.log('Sending old messages: ');
+    console.log(JSON.stringify(message));
     conn.send(JSON.stringify(message));
   }
 
@@ -108,6 +110,7 @@ export class PeerService {
         this.messageReceived.emit("UPDATE MESSAGES");
         break;
       case MessageType.AllMessages:
+        console.log('Received old messages!');
         const messages: Message[] = JSON.parse(message.messages[0]);
         this.previousMessages = this.previousMessages.concat(messages);
         console.log("Old messages: ");
@@ -117,6 +120,7 @@ export class PeerService {
         this.messageReceived.emit("UPDATE MESSAGES");
         break;
       case MessageType.RequestAllMessages:
+        console.log(fromConn.peer + ' just asked me to give him all messages');
         this.sendOldMessages(fromConn);
         break;
       default:
@@ -166,7 +170,7 @@ export class PeerService {
       // Đáng nhẽ phải để this.peer nhận xong old messages từ peerIds[0] rồi mới connect với các peer còn lại
       // Cơ mà connect luôn for testing purposes
       for (let i = 1; i < peerIds.length; i++) {
-        this.connectToPeer(peerIds[1], false);
+        this.connectToPeer(peerIds[i], false);
       }
     }
   }
@@ -174,6 +178,7 @@ export class PeerService {
   createNewRoom() {
     this.roomService.joinNewRoom(this.peer.id).subscribe((data: string) => {
       this.roomName = data;
+      console.log("roomName: " + this.roomName);
       // No peerId
       this.handleFirstJoinRoom([]);
     });
@@ -181,10 +186,14 @@ export class PeerService {
 
   joinExistingRoom(roomName: string) {
     this.roomName = roomName;
-    this.roomService.joinExistingRoom(this.peer.id, this.roomName);
-
-    // Get peerIds in room
-    const peerIds: any[] = null;
-    this.handleFirstJoinRoom(peerIds);
+    this.roomService.joinExistingRoom(this.peer.id, this.roomName).subscribe(
+      (peerIds) => {
+        console.log(peerIds);
+        this.handleFirstJoinRoom(peerIds.result);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
   }
 }
