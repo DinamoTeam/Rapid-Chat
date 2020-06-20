@@ -8,11 +8,14 @@ declare const Peer: any;
   providedIn: "root",
 })
 export class PeerService {
+  private timeWaitForAck = 1000; // Millisecond
+  private time = 0;
   private peer: any;
   private roomName: string;
   private connToGetOldMessages: any;
   private connectionsIAmHolding: any[] = [];
   private previousMessages: Message[] = [];
+  private messagesToBeAcknowledged: Message[] = [];
   connectionEstablished = new EventEmitter<Boolean>();
   infoBroadcasted = new EventEmitter<any>();
 
@@ -34,7 +37,9 @@ export class PeerService {
 
   private reconnectToPeerServer() {
     this.peer.on(PeerServer.Disconnected, () => {
-      setTimeout(() => this.peer.reconnect(), 3000);
+      setTimeout(function() {
+        this.peer.reconnect();
+      }, 3000);
     });
   }
   //*************************************************************
@@ -51,6 +56,8 @@ export class PeerService {
   private connectToPeer(otherPeerId: any, getOldMessages: boolean) {
     const conn = this.peer.connect(otherPeerId, { reliable: true });
     this.addUnique([conn], this.connectionsIAmHolding);
+    console.log('just add ' + conn.peer + ' to connectionsIAmHolding');
+
     if (getOldMessages === true) {
       this.connToGetOldMessages = conn;
     }
@@ -61,6 +68,7 @@ export class PeerService {
   private setupListenerForConnection(conn: any) {
     conn.on(PeerServer.Open, () => {
       this.addUnique([conn], this.connectionsIAmHolding);
+      console.log('just add ' + conn.peer + ' to connectionsIAmHolding');
       // If we chose this peer to give us all messages
       if (this.connToGetOldMessages === conn) {
         this.requestOldMessages(conn);
@@ -78,23 +86,39 @@ export class PeerService {
     switch (message.messageType) {
       case MessageType.Message:
         const messageContent: string = message.messages[0];
-        console.log(message.peerId + ": " + messageContent);
         this.previousMessages.push(message);
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
+        // Send Acknowledgement
+        fromConn.send(
+          JSON.stringify(
+            new Message(null, MessageType.Acknowledge, null, null, message.time)
+          )
+        );
         break;
       case MessageType.AllMessages:
-        console.log("Received old messages!");
         const messages: Message[] = JSON.parse(message.messages[0]);
         this.previousMessages = this.previousMessages.concat(messages);
         console.log("Old messages: ");
         messages.forEach((mes) => {
-          console.log(mes.peerId + ": " + mes.messages[0]);
+          console.log(mes.fromPeerId + ": " + mes.messages[0]);
         });
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
+        // Send Acknowledgement
+        fromConn.send(
+          JSON.stringify(
+            new Message(null, MessageType.Acknowledge, null, null, message.time)
+          )
+        );
         break;
       case MessageType.RequestAllMessages:
         console.log(fromConn.peer + " just asked me to give him all messages");
         this.sendOldMessages(fromConn);
+        break;
+      case MessageType.Acknowledge:
+        const indexDelete = this.messagesToBeAcknowledged.findIndex(
+          (mes) => mes.time === message.time
+        );
+        this.messagesToBeAcknowledged.splice(indexDelete, 1);
         break;
       default:
         throw new Error("Unhandled message type");
@@ -130,7 +154,13 @@ export class PeerService {
   }
 
   private requestOldMessages(conn: any) {
-    const message = new Message(null, MessageType.RequestAllMessages, null);
+    const message = new Message(
+      null,
+      MessageType.RequestAllMessages,
+      null,
+      null,
+      this.time++
+    );
     conn.send(JSON.stringify(message));
   }
 
@@ -138,11 +168,15 @@ export class PeerService {
     const message = new Message(
       [JSON.stringify(this.previousMessages)],
       MessageType.AllMessages,
-      null
+      this.peer.id,
+      conn.peer,
+      this.time++
     );
     console.log("Sending old messages: ");
     console.log(JSON.stringify(message));
     conn.send(JSON.stringify(message));
+    this.messagesToBeAcknowledged.push(message);
+    this.acknowledgeOrResend(message);
   }
   //*************************************************************
 
@@ -182,15 +216,55 @@ export class PeerService {
     if (mess.length === 0) {
       return;
     }
-    const messageToSend = new Message(
-      [mess],
-      MessageType.Message,
-      this.peer.id
+
+    this.previousMessages.push(
+      new Message([mess], MessageType.Message, this.peer.id, null, -1)
     );
-    const messageInJson = JSON.stringify(messageToSend);
-    this.previousMessages.push(messageToSend);
-    this.connectionsIAmHolding.forEach((conn) => conn.send(messageInJson));
+
+    this.connectionsIAmHolding.forEach((conn) => {
+      const messageToSend = new Message(
+        [mess],
+        MessageType.Message,
+        this.peer.id,
+        conn.peer,
+        this.time++
+      );
+      const messageInJson = JSON.stringify(messageToSend);
+      conn.send(messageInJson);
+      this.messagesToBeAcknowledged.push(messageToSend);
+      setTimeout(function() {
+        this.acknowledgeOrResend(messageToSend);
+      }, this.timeWaitForAck);
+    });
   }
+
+  acknowledgeOrResend(mess: Message) {
+    // If message hasn't been received
+    console.log('this.acknowledgeOrResend is called');
+    if (
+      this.messagesToBeAcknowledged.find(
+        (message) => message.time === mess.time
+      )
+    ) {
+      console.log('Gotta resend to ' + mess.toPeerId);
+      console.log('Current connections: ');
+      console.log(this.connectionsIAmHolding);
+      const conn = this.connectionsIAmHolding.find(
+        (connection) => connection.peerId === mess.toPeerId
+      );
+      // If that peer hasn't disconnect
+      if (conn) {
+        console.log('Just sent, now setting another timeout for 1 sec');
+        var that = this;
+        setTimeout(function() {
+          console.log('This is called');
+          that.acknowledgeOrResend(mess);
+        }, that.timeWaitForAck);
+      }
+    }
+  }
+
+  sendAcknowledge(conn: any, mess: Message) {}
 
   getPeerId(): string {
     return this.peer.id;
@@ -204,8 +278,8 @@ export class PeerService {
     return this.previousMessages;
   }
 
-  getAllPeerIds() {
-    console.log(this.connectionsIAmHolding.map((conn) => conn.peer));
+  getAllPeerIds(): string[] {
+    return this.connectionsIAmHolding.map((conn) => conn.peer);
   }
 }
 
