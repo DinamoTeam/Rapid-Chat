@@ -37,13 +37,10 @@ export class RoomService {
   deletePeer(peerId: string, roomName: string): void {
     this.http
       .get(
-        this.apiURL +
-          "DeletePeer?peerId=" +
-          peerId +
-          "&roomName=" +
-          roomName
+        this.apiURL + "DeletePeer?peerId=" + peerId + "&roomName=" + roomName
       )
-      .pipe(retry(1), catchError(this.handleError)).subscribe(() => {});
+      .pipe(retry(1), catchError(this.handleError))
+      .subscribe(() => {});
   }
 
   // Error handling
