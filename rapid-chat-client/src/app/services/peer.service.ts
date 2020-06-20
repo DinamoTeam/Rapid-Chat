@@ -110,8 +110,7 @@ export class PeerService {
       (connection) => connection === conn
     );
     this.connectionsIAmHolding.splice(index, 1);
-
-    // TODO: Delete the peerId from Peer table in DB
+    this.roomService.deletePeer(conn.peer, this.roomName);
   }
 
   //***************** Handle when join room *******************

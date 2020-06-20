@@ -65,5 +65,19 @@ namespace Rapid_Chat.Controllers
                 }
             }
         }
+
+        // Get: api/Room/DeletePeer?peerId=abc&roomName=def
+        [HttpGet]
+        public async Task<IActionResult> DeletePeer(string peerId, string roomName)
+		{
+            var peer = _database.peers.FirstOrDefault(
+                p => p.RoomName == roomName && p.PeerId == peerId);
+            if (peer != null)
+            {
+                _database.Remove(peer);
+                await _database.SaveChangesAsync();
+            }
+            return Ok(200);
+        }
     }
 }
