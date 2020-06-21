@@ -181,7 +181,10 @@ export class PeerService {
     console.log(
       "Send old messages to " + conn.peer + " with time: " + message.time
     );
-    this.acknowledgeOrResend(message);
+    const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
+    setTimeout(function () {
+      that.acknowledgeOrResend(message);
+    }, that.timeWaitForAck);
   }
   //*************************************************************
 
@@ -243,24 +246,32 @@ export class PeerService {
     });
   }
 
-  acknowledgeOrResend(mess: Message) {
+  acknowledgeOrResend(mess: Message, hasSent = 0) {
     // If message hasn't been received
     if (
       this.messagesToBeAcknowledged.find(
         (message) => message.time === mess.time
       )
     ) {
-      console.log("Waiting too long for ack. Resending messages");
       const conn = this.connectionsIAmHolding.find(
         (connection) => connection.peer === mess.toPeerId
       );
-      conn.send(JSON.stringify(mess));
+      // Has sent for more than 5 times
+      if (hasSent > 5) {
+        this.roomService.deletePeer(conn.peer, this.roomName); // Probably peer left room
+        this.connectionsIAmHolding = this.connectionsIAmHolding.filter(
+          (connection) => connection.peer !== conn.peer
+        );
+        return;
+      }
+
       // If that peer hasn't disconnect
       if (conn) {
-        console.log("Resent");
+        conn.send(JSON.stringify(mess));
+        console.log("Waiting too long for ack. Resent messages");
         const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
         setTimeout(function () {
-          that.acknowledgeOrResend(mess);
+          that.acknowledgeOrResend(mess, hasSent + 1);
         }, that.timeWaitForAck);
       }
     }
