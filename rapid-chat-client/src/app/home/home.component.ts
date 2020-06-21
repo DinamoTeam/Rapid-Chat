@@ -1,7 +1,7 @@
 import { Component, OnInit, NgZone } from "@angular/core";
 import { PeerService, BroadcastInfo } from "../services/peer.service";
 import { ActivatedRoute } from "@angular/router";
-import { Location } from '@angular/common';
+import { Location } from "@angular/common";
 
 @Component({
   selector: "app-home",
@@ -46,7 +46,7 @@ export class HomeComponent implements OnInit {
           this.messages = this.peerService.getAllMessages();
         } else if (message == BroadcastInfo.RoomName) {
           this.roomName = this.peerService.getRoomName();
-          this.location.replaceState('/' + this.roomName);
+          this.location.replaceState("/" + this.roomName);
         }
       });
     });
@@ -66,5 +66,10 @@ export class HomeComponent implements OnInit {
   getPreviousMessages() {
     console.log("Previous messages: ");
     console.log(this.peerService.getAllMessages());
+  }
+
+  getMessagesToBeAck() {
+    console.log("Messages to be ack: ");
+    console.log(this.peerService.getMessagesToBeAck());
   }
 }

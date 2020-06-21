@@ -1,21 +1,25 @@
 export class Message {
-  messages: string[];
+  content: string;
   messageType: MessageType;
   fromPeerId: string;
   toPeerId: string;
   time: number;
   constructor(
-    messages: string[],
+    content: string,
     messageType: MessageType,
     fromPeerId: string,
     toPeerId: string,
     time: number
   ) {
-    this.messages = messages;
+    this.content = content;
     this.messageType = messageType;
     this.fromPeerId = fromPeerId;
     this.toPeerId = toPeerId;
     this.time = time;
+  }
+
+  toString(): string {
+    return "Time: " + this.time;
   }
 }
 

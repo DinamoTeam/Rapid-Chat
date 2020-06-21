@@ -80,11 +80,10 @@ export class PeerService {
 
   private handleMessageFromPeer(messageJson: string, fromConn: any) {
     const message: Message = JSON.parse(messageJson);
-
     switch (message.messageType) {
       case MessageType.Message:
         if (!this.hasReceivedMessage(message)) {
-          const messageContent: string = message.messages[0];
+          const messageContent: string = message.content;
           this.previousMessages.push(message);
           this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         }
@@ -96,12 +95,12 @@ export class PeerService {
         );
         break;
       case MessageType.AllMessages:
-        const messages: Message[] = JSON.parse(message.messages[0]);
+        const messages: Message[] = JSON.parse(message.content);
         if (messages.length !== 0 && !this.hasReceivedMessage(messages[0])) {
           this.previousMessages = this.previousMessages.concat(messages);
           console.log("Old messages: ");
           messages.forEach((mes) => {
-            console.log(mes.fromPeerId + ": " + mes.messages[0]);
+            console.log(mes.fromPeerId + ": " + mes.content);
           });
           this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         }
@@ -113,13 +112,16 @@ export class PeerService {
         );
         break;
       case MessageType.RequestAllMessages:
+        console.log("RequestAllMessages from " + fromConn.peer);
         this.sendOldMessages(fromConn);
         break;
       case MessageType.Acknowledge:
         const indexDelete = this.messagesToBeAcknowledged.findIndex(
           (mes) => mes.time === message.time
         );
-        this.messagesToBeAcknowledged.splice(indexDelete, 1);
+        if (indexDelete !== -1) {
+          this.messagesToBeAcknowledged.splice(indexDelete, 1);
+        }
         break;
       default:
         throw new Error("Unhandled message type");
@@ -167,7 +169,7 @@ export class PeerService {
 
   private sendOldMessages(conn: any) {
     const message = new Message(
-      [JSON.stringify(this.previousMessages)],
+      JSON.stringify(this.previousMessages),
       MessageType.AllMessages,
       this.peer.id,
       conn.peer,
@@ -176,6 +178,9 @@ export class PeerService {
     console.log("Sending old messages: ");
     conn.send(JSON.stringify(message));
     this.messagesToBeAcknowledged.push(message);
+    console.log(
+      "Send old messages to " + conn.peer + " with time: " + message.time
+    );
     this.acknowledgeOrResend(message);
   }
   //*************************************************************
@@ -183,7 +188,6 @@ export class PeerService {
   private addUnique(list: any[], listToBeAddedTo: any[]) {
     list.forEach((obj) => {
       if (listToBeAddedTo.indexOf(obj) === -1) {
-        // Note: '==', NOT '==='
         listToBeAddedTo.push(obj);
       }
     });
@@ -212,18 +216,18 @@ export class PeerService {
     );
   }
 
-  sendMessage(mess: string) {
-    if (mess.length === 0) {
+  sendMessage(content: string) {
+    if (content.length === 0) {
       return;
     }
 
     this.previousMessages.push(
-      new Message([mess], MessageType.Message, this.peer.id, null, -1)
+      new Message(content, MessageType.Message, this.peer.id, null, -1)
     );
 
     this.connectionsIAmHolding.forEach((conn) => {
       const messageToSend = new Message(
-        [mess],
+        content,
         MessageType.Message,
         this.peer.id,
         conn.peer,
@@ -285,6 +289,10 @@ export class PeerService {
 
   getAllPeerIds(): string[] {
     return this.connectionsIAmHolding.map((conn) => conn.peer);
+  }
+
+  getMessagesToBeAck(): any[] {
+    return this.messagesToBeAcknowledged;
   }
 }
 

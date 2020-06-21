@@ -7,10 +7,13 @@
 <br>
 <br>
 <button type="button" class="btn btn-success" (click)="getPreviousMessages()">Print previous Messages</button>
+<br>
+<br>
+<button type="button" class="btn btn-success" (click)="getMessagesToBeAck()">Print messages to be ack</button>
 
 <div class="container-fluid mt-2">
   <div *ngFor="let mess of messages">
-    <app-message-bubble [senderName]="mess.peerId" [content]="mess.messages[0]">
+    <app-message-bubble [senderName]="mess.fromPeerId" [content]="mess.content">
     </app-message-bubble>
   </div>
 </div>
