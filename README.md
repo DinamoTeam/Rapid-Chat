@@ -33,7 +33,7 @@ In the client's folder. Restore all NPM packages by running
 npm install
 ```
 Config PeerServer
-Edit file rapid-chat-client/node_modules/ws/index.js by adding the last 2 lines
+Edit file rapid-chat-client/node_modules/peer/node_modules/ws/index.js by adding the last 2 lines
 
 ```js
 'use strict';
@@ -52,6 +52,11 @@ var PeerServer = require('peer').PeerServer;
 var server = PeerServer({ port: 9000, path: '/myapp' });
 ```
 
+Start PeerServer
+
+```shell
+node rapid-chat-client/node_modules/peer/node_modules/ws/index.js
+```
 Start IIS Express server through Visual Studio IDE or run this command in the project's folder
 ```shell
 dotnet run
