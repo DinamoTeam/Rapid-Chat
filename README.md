@@ -56,6 +56,7 @@ Start PeerServer
 
 ```shell
 node rapid-chat-client/node_modules/peer/node_modules/ws/index.js
+### Go to this link to make sure PeerServer run successfully http://127.0.0.1:9000/myapp
 ```
 Start IIS Express server through Visual Studio IDE or run this command in the project's folder
 ```shell
