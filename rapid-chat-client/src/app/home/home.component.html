@@ -1,15 +1,4 @@
-<h1>My id {{ myPeerId }}</h1>
-<br>
-<!--<textarea [(ngModel)]="messageToSend"></textarea>-->
-<!--<br>
-<button type="button" class="btn btn-success" (click)="getAllPeerIds()">Print All Ids</button>
-<br>
-<br>
-<button type="button" class="btn btn-success" (click)="getPreviousMessages()">Print previous Messages</button>
-<br>
-<br>
-<button type="button" class="btn btn-success" (click)="getMessagesToBeAck()">Print messages to be ack</button>-->
-
+<!--<h1>My id {{ myPeerId }}</h1>-->
 <div class="container-fluid mt-2">
   <div *ngFor="let mess of messages">
     <app-message-bubble [senderName]="mess.fromPeerId" [content]="mess.content">
