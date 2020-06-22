@@ -1,15 +1,14 @@
 <h1>My id {{ myPeerId }}</h1>
 <br>
-<textarea [(ngModel)]="messageToSend"></textarea>
-<button type="button" class="btn btn-success" (click)="sendMessage()">Send</button>
-<br>
+<!--<textarea [(ngModel)]="messageToSend"></textarea>-->
+<!--<br>
 <button type="button" class="btn btn-success" (click)="getAllPeerIds()">Print All Ids</button>
 <br>
 <br>
 <button type="button" class="btn btn-success" (click)="getPreviousMessages()">Print previous Messages</button>
 <br>
 <br>
-<button type="button" class="btn btn-success" (click)="getMessagesToBeAck()">Print messages to be ack</button>
+<button type="button" class="btn btn-success" (click)="getMessagesToBeAck()">Print messages to be ack</button>-->
 
 <div class="container-fluid mt-2">
   <div *ngFor="let mess of messages">
@@ -17,3 +16,14 @@
     </app-message-bubble>
   </div>
 </div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div class="container">
+  <form class="form-container fixed-bottom mx-3" [formGroup]="messageForm" (ngSubmit)="sendMessage(messageForm.value)">
+    <div class="form-group">
+      <input type="text" formControlName="messageToSend" class="form-control" placeholder="Aa" autofocus>
+    </div>
+  </form>
+</div>
+

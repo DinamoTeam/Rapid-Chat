@@ -2,6 +2,7 @@ import { Component, OnInit, NgZone } from "@angular/core";
 import { PeerService, BroadcastInfo } from "../services/peer.service";
 import { ActivatedRoute } from "@angular/router";
 import { Location } from "@angular/common";
+import { FormControl, FormGroup, NgForm, FormBuilder } from '@angular/forms';
 
 @Component({
   selector: "app-home",
@@ -10,7 +11,8 @@ import { Location } from "@angular/common";
 })
 export class HomeComponent implements OnInit {
   peerConnectToId: any; // binded with html input
-  messageToSend: string; // binded with html text area
+  messageForm: FormGroup;
+  messageToSend: FormControl; // binded with html text area
   myPeerId: string;
   messages: any[] = [];
   roomName: string;
@@ -19,7 +21,8 @@ export class HomeComponent implements OnInit {
     private peerService: PeerService,
     private ngZone: NgZone,
     private actRoute: ActivatedRoute,
-    private location: Location
+    private location: Location,
+    private formBuilder: FormBuilder
   ) {
     this.peerService.connectionEstablished.subscribe((successful: boolean) => {
       if (successful) {
@@ -36,6 +39,10 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.subscribeToPeerServerEvents();
+    this.messageToSend = new FormControl('');
+    this.messageForm = this.formBuilder.group({
+      'messageToSend': this.messageToSend
+    });
   }
 
   subscribeToPeerServerEvents() {
@@ -52,10 +59,11 @@ export class HomeComponent implements OnInit {
     });
   }
 
-  sendMessage() {
-    console.log("Me: " + this.messageToSend);
-    this.peerService.sendMessage(this.messageToSend);
+  sendMessage(form: NgForm) {
+    console.log("Me: " + this.messageToSend.value);
+    this.peerService.sendMessage(this.messageToSend.value);
     this.messages = this.peerService.getAllMessages();
+    window.scrollTo(0, document.body.scrollHeight + 2000);
   }
 
   getAllPeerIds() {
