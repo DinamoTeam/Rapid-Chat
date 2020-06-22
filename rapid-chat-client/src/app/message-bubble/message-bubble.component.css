@@ -1,0 +1,16 @@
+.otherPplMessage {
+    background-color: #0375B4;
+    color: white;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.card-body {
+    padding: 8px;
+}
+
+.card-text {
+    margin: 0px;
+}

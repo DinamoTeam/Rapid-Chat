@@ -1,7 +1,7 @@
-<div class="d-flex justify-content-start">
-  <div class="card mb-3">
+<div [ngClass]="{ 'justify-content-end': senderName == myPeerId }" class="d-flex">
+  <div [ngClass]="{ 'otherPplMessage': senderName != myPeerId }" class="card mb-1">
     <div class="card-body">
-      <h5 class="card-title">{{ senderName }}</h5>
+      <p class="card-text">{{ displayName }}</p>
       <p class="card-text">{{ content }}</p>
     </div>
   </div>
