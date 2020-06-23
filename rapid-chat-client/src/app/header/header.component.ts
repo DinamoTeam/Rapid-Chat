@@ -26,9 +26,4 @@ export class HeaderComponent implements OnInit {
     this.isExpanded = false;
     this.router.navigate(['/']);
   }
-
-  onBtnAboutClick() {
-    this.isExpanded = false;
-    this.router.navigate(['/about']);
-  }
 }
