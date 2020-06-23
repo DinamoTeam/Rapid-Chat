@@ -1,6 +1,10 @@
 .otherPplMessage {
-    background-color: #0375B4;
-    color: white;
+  background-color: #0375B4;
+  color: white;
+}
+
+.myMessage {
+  background-color: #EFEFEF;
 }
 
 .card {
@@ -8,11 +12,11 @@
 }
 
 .card-body {
-    padding: 8px;
+  padding: 8px;
 }
 
 .card-text {
-    margin: 0px;
+  margin: 0px;
 }
 
 html {

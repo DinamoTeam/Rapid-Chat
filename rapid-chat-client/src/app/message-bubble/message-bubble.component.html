@@ -1,5 +1,5 @@
 <div [ngClass]="{ 'justify-content-end': senderName == myPeerId }" class="d-flex">
-  <div [ngClass]="{ 'otherPplMessage': senderName != myPeerId }" class="card mb-1">
+  <div [ngClass]="{ 'otherPplMessage': senderName != myPeerId, 'myMessage': senderName == myPeerId }" class="card mb-1">
     <div class="card-body">
       <p class="card-text">{{ displayName }}</p>
       <p class="card-text">{{ content }}</p>
