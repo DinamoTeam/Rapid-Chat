@@ -1,7 +1,7 @@
 1.	Lấy tên người dùng để display tên đó (thay vì display id)
 2.	Cho người dùng option tạo room hoặc join room cũ. Display cái roomName để mọi người có thể copy
 3.	Làm UI ổn ổn
-4.	Clean up Database (Mỗi room hết hạn sau 1 ngày. Mỗi khi người dùng tạo room mới, Nếu Math.random() < 0.1 thì clean up các room hết hạn)
+4.	Clean up Database (Dùng peerServer.on('disconnected') để xóa user ra khỏi Db)
 5.	getOldMessages from random user, thay vì always from user 1. Ngoài ra, nếu user mình chọn lấy oldMessages thoát ra thì phải đổi user mới
 6.	Enable Voice call, video call
 7.	Deploy lên Azure (Gói free)
