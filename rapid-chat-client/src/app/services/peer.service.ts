@@ -56,7 +56,7 @@ export class PeerService {
   }
 
   private connectToPeer(otherPeerId: any, getOldMessages: boolean) {
-    const conn = this.peer.connect(otherPeerId, { reliable: true });
+    const conn = this.peer.connect(otherPeerId, { reliable: true, serialization: 'json' });
     this.addUnique([conn], this.connectionsIAmHolding);
 
     if (getOldMessages === true) {
