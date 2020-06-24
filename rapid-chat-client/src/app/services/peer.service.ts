@@ -67,7 +67,7 @@ export class PeerService {
   }
 
   private connectToTheRestInRoom(exceptPeerId: any) {
-    this.peerIdsInRoom.forEach(peerId => {
+    this.peerIdsInRoom.forEach((peerId) => {
       if (peerId !== exceptPeerId) {
         this.connectToPeer(peerId, false);
       }
@@ -150,7 +150,9 @@ export class PeerService {
       console.log("I am the first one in this room");
     } else {
       this.peerIdsInRoom = peerIds;
-      this.connectToPeer(peerIds[0], true);
+      // this.connectToPeer(peerIds[0], true);
+      const randIndex = Math.floor(Math.random() * peerIds.length);
+      this.connectToPeer(peerIds[randIndex], true);
       const that = this;
       setTimeout(function () {
         if (!that.hasReceivedAllMessages) {
@@ -235,7 +237,9 @@ export class PeerService {
       (peerIds) => {
         console.log(peerIds);
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
-          alert("Either room not exists or has been deleted. Please reroute to home, Giang");
+          alert(
+            "Either room not exists or has been deleted. Please reroute to home, Giang"
+          );
           throw new Error("Either room not exists or has been deleted");
         }
         this.handleFirstJoinRoom(peerIds.result);
