@@ -138,7 +138,6 @@ export class PeerService {
       (connection) => connection === conn
     );
     this.connectionsIAmHolding.splice(index, 1);
-    this.roomService.deletePeer(conn.peer, this.roomName);
   }
 
   //***************** Handle when join room *******************
@@ -258,7 +257,7 @@ export class PeerService {
       );
       // Has sent for more than 5 times
       if (hasSent > 5) {
-        this.roomService.deletePeer(conn.peer, this.roomName); // Probably peer left room
+        console.log('PeerServer should have deleted this user from Db???');
         this.connectionsIAmHolding = this.connectionsIAmHolding.filter(
           (connection) => connection.peer !== conn.peer
         );

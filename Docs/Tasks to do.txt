@@ -1,7 +1,10 @@
-1.	Lấy tên người dùng để display tên đó (thay vì display id)
-2.	Cho người dùng option tạo room hoặc join room cũ. Display cái roomName để mọi người có thể copy
-3.	Làm UI ổn ổn
-4.	Clean up Database (Dùng peerServer.on('disconnected') để xóa user ra khỏi Db)
-5.	getOldMessages from random user, thay vì always from user 1. Ngoài ra, nếu user mình chọn lấy oldMessages thoát ra thì phải đổi user mới
-6.	Enable Voice call, video call
-7.	Deploy lên Azure (Gói free)
+1.	Lấy tên người dùng để display tên đó (thay vì display id) => YES
+2.	Làm UI ổn ổn
+	- Auto scroll
+	- 
+3.	Clean up Database (Dùng peerServer.on('disconnected') để xóa user ra khỏi Db)
+4.  Xóa room ngay khi hết người trong phòng
+5.	Login để lưu lại peerId hoặc lưu vào cache
+6.	getOldMessages from random user, thay vì always from user 1. Ngoài ra, nếu user mình chọn lấy oldMessages thoát ra thì phải đổi user mới
+7.	Enable Voice call, video call
+8.	Deploy lên Azure (Gói free)

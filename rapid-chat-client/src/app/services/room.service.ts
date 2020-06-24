@@ -33,16 +33,6 @@ export class RoomService {
       .pipe(retry(1), catchError(this.handleError));
   }
 
-  // HttpClient API post() -> Delete peer from Db
-  deletePeer(peerId: string, roomName: string): void {
-    this.http
-      .get(
-        this.apiURL + "DeletePeer?peerId=" + peerId + "&roomName=" + roomName
-      )
-      .pipe(retry(1), catchError(this.handleError))
-      .subscribe(() => {});
-  }
-
   // Error handling
   handleError(error) {
     let errorMessage = "";

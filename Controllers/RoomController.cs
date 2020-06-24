@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Rapid_Chat.Data;
 using Rapid_Chat.Model;
 
@@ -66,17 +67,27 @@ namespace Rapid_Chat.Controllers
             }
         }
 
-        // Get: api/Room/DeletePeer?peerId=abc&roomName=def
+        // Get: api/Room/DeletePeer?peerId=abc
         [HttpGet]
-        public async Task<IActionResult> DeletePeer(string peerId, string roomName)
+        public async Task<IActionResult> DeletePeer(string peerId)
 		{
-            var peer = _database.peers.FirstOrDefault(
-                p => p.RoomName == roomName && p.PeerId == peerId);
+            // peer.PeerID is unique by itself. It is a UUID
+            Peer peer = _database.peers.FirstOrDefault(p => p.PeerId == peerId);
             if (peer != null)
             {
-                _database.Remove(peer);
+                _database.peers.Remove(peer);
                 await _database.SaveChangesAsync();
             }
+
+            // Delete room if nobody's in it
+            if (!_database.peers.Any(p => p.RoomName == peer.RoomName))
+            {
+                Room room = _database.rooms.FirstOrDefault(r => r.RoomName == peer.RoomName);
+                _database.rooms.Remove(room);
+                await _database.SaveChangesAsync();
+            }
+
+
             return Ok(200);
         }
     }
