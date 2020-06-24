@@ -29,23 +29,23 @@ export class PeerService {
 
   //************* Connect + Reconnect to PeerServer *************
   private connectToPeerServer() {
-    this.peer.on(PeerServer.Open, (myId: string) => {
+    this.peer.on(PeerEvent.Open, (myId: string) => {
       console.log("I have connected to peerServer. My id: " + myId);
       this.connectionEstablished.emit(true);
     });
   }
 
   private reconnectToPeerServer() {
-    this.peer.on(PeerServer.Disconnected, () => {
-      setTimeout(function () {
-        this.peer.reconnect();
-      }, 3000);
+    this.peer.on(PeerEvent.Disconnected, () => {
+      // Disconnect => destroy permanently this peer. Need to test this more!
+      this.peer.destroy();
+      // Also, refresh browser or sth like that
     });
   }
   //*************************************************************
 
   private registerConnectToMeEvent() {
-    this.peer.on(PeerServer.Connection, (conn: any) => {
+    this.peer.on(PeerEvent.Connection, (conn: any) => {
       console.log(
         "A peer with connectionId: " + conn.peer + " have just connected to me"
       );
@@ -66,16 +66,16 @@ export class PeerService {
 
   private setupListenerForConnection(conn: any) {
     this.addUnique([conn], this.connectionsIAmHolding);
-    conn.on(PeerServer.Open, () => {
+    conn.on(ConnectionEvent.Open, () => {
       // If we chose this peer to give us all messages
       if (this.connToGetOldMessages === conn) {
         this.requestOldMessages(conn);
       }
     }); // When the connection first establish
-    conn.on(PeerServer.Data, (message) =>
+    conn.on(ConnectionEvent.Data, (message) =>
       this.handleMessageFromPeer(message, conn)
     ); // the other peer send us some data
-    conn.on(PeerServer.Close, () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
+    conn.on(ConnectionEvent.Close, () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
   }
 
   private handleMessageFromPeer(messageJson: string, fromConn: any) {
@@ -83,7 +83,6 @@ export class PeerService {
     switch (message.messageType) {
       case MessageType.Message:
         if (!this.hasReceivedMessage(message)) {
-          const messageContent: string = message.content;
           this.previousMessages.push(message);
           this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         }
@@ -98,10 +97,6 @@ export class PeerService {
         const messages: Message[] = JSON.parse(message.content);
         if (messages.length !== 0 && !this.hasReceivedMessage(messages[0])) {
           this.previousMessages = this.previousMessages.concat(messages);
-          console.log("Old messages: ");
-          messages.forEach((mes) => {
-            console.log(mes.fromPeerId + ": " + mes.content);
-          });
           this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         }
         // Send Acknowledgement
@@ -210,6 +205,10 @@ export class PeerService {
     this.roomService.joinExistingRoom(this.peer.id, this.roomName).subscribe(
       (peerIds) => {
         console.log(peerIds);
+        if (peerIds.length === 1 && peerIds[0] === 'ROOM_NOT_EXIST') {
+          alert('Either room not exists or has been deleted');
+          throw new Error('Either room not exists or has been deleted');
+        }
         this.handleFirstJoinRoom(peerIds.result);
       },
       (error) => {
@@ -257,7 +256,9 @@ export class PeerService {
       );
       // Has sent for more than 5 times
       if (hasSent > 5) {
-        console.log('PeerServer should have deleted this user from Db???');
+        console.error(
+          "Please tell Minh if you see this! PeerServer should have deleted this user from Db???"
+        );
         this.connectionsIAmHolding = this.connectionsIAmHolding.filter(
           (connection) => connection.peer !== conn.peer
         );
@@ -306,12 +307,20 @@ export class PeerService {
   }
 }
 
-export const enum PeerServer {
+export const enum PeerEvent {
   Open = "open",
   Close = "close",
   Connection = "connection",
   Data = "data",
   Disconnected = "disconnected",
+  Error = "error",
+}
+
+export const enum ConnectionEvent {
+  Open = "open",
+  Close = "close",
+  Data = "data",
+  Error = "error",
 }
 
 export const enum BroadcastInfo {

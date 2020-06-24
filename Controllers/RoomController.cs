@@ -45,14 +45,26 @@ namespace Rapid_Chat.Controllers
         [HttpGet]
         public async Task<IActionResult> JoinExistingRoom(string peerId, string roomName)
 		{
-            var peerIds = _database.peers.Where(p => p.RoomName == roomName)
+            if (await RoomExist(roomName))
+            {
+                var peerIds = _database.peers.Where(p => p.RoomName == roomName)
                                          .Select(p => p.PeerId)
                                          .ToListAsync();
-            _database.peers.Add(new Peer(peerId, roomName));
-            await _database.SaveChangesAsync();
-            return Ok(peerIds);
+                _database.peers.Add(new Peer(peerId, roomName));
+                await _database.SaveChangesAsync();
+                return Ok(peerIds);
+            }
+            return Ok(new List<string> { "ROOM_NOT_EXIST" });
         }
 
+        private async Task<bool> RoomExist(string roomName)
+        {
+            if (await  _database.rooms.AnyAsync(r => r.RoomName == roomName))
+            {
+                return true;
+            }
+            return false;
+        }
 
         private string GenerateRoomName()
         {

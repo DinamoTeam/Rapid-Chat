@@ -41,7 +41,7 @@ export class RoomService {
     } else {
       errorMessage = "Error from serve!";
     }
-
+    console.log(error);
     window.alert(errorMessage);
     return throwError(errorMessage);
   }
