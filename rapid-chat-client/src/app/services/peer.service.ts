@@ -13,9 +13,11 @@ export class PeerService {
   private peer: any;
   private roomName: string;
   private connToGetOldMessages: any;
+  private peerIdsInRoom: any[] = [];
   private connectionsIAmHolding: any[] = [];
   private previousMessages: Message[] = [];
   private messagesToBeAcknowledged: Message[] = [];
+  private hasReceivedAllMessages = false;
   connectionEstablished = new EventEmitter<Boolean>();
   infoBroadcasted = new EventEmitter<any>();
 
@@ -64,6 +66,14 @@ export class PeerService {
     this.setupListenerForConnection(conn);
   }
 
+  private connectToTheRestInRoom(exceptPeerId: any) {
+    this.peerIdsInRoom.forEach(peerId => {
+      if (peerId !== exceptPeerId) {
+        this.connectToPeer(peerId, false);
+      }
+    });
+  }
+
   private setupListenerForConnection(conn: any) {
     this.addUnique([conn], this.connectionsIAmHolding);
     conn.on(ConnectionEvent.Open, () => {
@@ -82,10 +92,8 @@ export class PeerService {
     const message: Message = JSON.parse(messageJson);
     switch (message.messageType) {
       case MessageType.Message:
-        if (!this.hasReceivedMessage(message)) {
-          this.previousMessages.push(message);
-          this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
-        }
+        this.addUniqueMessages([message], this.previousMessages);
+        this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         // Send Acknowledgement
         fromConn.send(
           JSON.stringify(
@@ -94,17 +102,17 @@ export class PeerService {
         );
         break;
       case MessageType.AllMessages:
+        this.hasReceivedAllMessages = true;
         const messages: Message[] = JSON.parse(message.content);
-        if (messages.length !== 0 && !this.hasReceivedMessage(messages[0])) {
-          this.previousMessages = this.previousMessages.concat(messages);
-          this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
-        }
+        this.addUniqueMessages(messages, this.previousMessages);
+        this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         // Send Acknowledgement
         fromConn.send(
           JSON.stringify(
             new Message(null, MessageType.Acknowledge, null, null, message.time)
           )
         );
+        this.connectToTheRestInRoom(fromConn.peer);
         break;
       case MessageType.RequestAllMessages:
         console.log("RequestAllMessages from " + fromConn.peer);
@@ -141,12 +149,16 @@ export class PeerService {
       // DO NOTHING
       console.log("I am the first one in this room");
     } else {
+      this.peerIdsInRoom = peerIds;
       this.connectToPeer(peerIds[0], true);
-      // Đáng nhẽ phải để this.peer nhận xong old messages từ peerIds[0] rồi mới connect với các peer còn lại
-      // Cơ mà connect luôn for testing purposes
-      for (let i = 1; i < peerIds.length; i++) {
-        this.connectToPeer(peerIds[i], false);
-      }
+      const that = this;
+      setTimeout(function () {
+        if (!that.hasReceivedAllMessages) {
+          alert(
+            "Hey Giang, please refresh browser! The peer we intended to get old messages from just left the room or is taking to long to answer"
+          );
+        }
+      }, 4000);
     }
   }
 
@@ -169,7 +181,6 @@ export class PeerService {
       conn.peer,
       this.time++
     );
-    console.log("Sending old messages: ");
     conn.send(JSON.stringify(message));
     this.messagesToBeAcknowledged.push(message);
     console.log(
@@ -190,6 +201,24 @@ export class PeerService {
     });
   }
 
+  private addUniqueMessages(list: Message[], listToBeAddedTo: Message[]) {
+    list.forEach((message) => {
+      let weHadThatMessage = false;
+      for (let i = 0; i < listToBeAddedTo.length; i++) {
+        if (
+          listToBeAddedTo[i].fromPeerId === message.fromPeerId &&
+          listToBeAddedTo[i].time === message.time
+        ) {
+          weHadThatMessage = true;
+          break;
+        }
+      }
+      if (!weHadThatMessage) {
+        listToBeAddedTo.push(message);
+      }
+    });
+  }
+
   createNewRoom() {
     this.roomService.joinNewRoom(this.peer.id).subscribe((data: string) => {
       this.roomName = data;
@@ -205,9 +234,9 @@ export class PeerService {
     this.roomService.joinExistingRoom(this.peer.id, this.roomName).subscribe(
       (peerIds) => {
         console.log(peerIds);
-        if (peerIds.length === 1 && peerIds[0] === 'ROOM_NOT_EXIST') {
-          alert('Either room not exists or has been deleted');
-          throw new Error('Either room not exists or has been deleted');
+        if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
+          alert("Either room not exists or has been deleted. Please reroute to home, Giang");
+          throw new Error("Either room not exists or has been deleted");
         }
         this.handleFirstJoinRoom(peerIds.result);
       },
@@ -223,7 +252,7 @@ export class PeerService {
     }
 
     this.previousMessages.push(
-      new Message(content, MessageType.Message, this.peer.id, null, -1)
+      new Message(content, MessageType.Message, this.peer.id, null, this.time)
     );
 
     this.connectionsIAmHolding.forEach((conn) => {
@@ -232,7 +261,7 @@ export class PeerService {
         MessageType.Message,
         this.peer.id,
         conn.peer,
-        this.time++
+        this.time
       );
       const messageInJson = JSON.stringify(messageToSend);
       conn.send(messageInJson);
@@ -242,6 +271,7 @@ export class PeerService {
         that.acknowledgeOrResend(messageToSend);
       }, that.timeWaitForAck);
     });
+    this.time++;
   }
 
   acknowledgeOrResend(mess: Message, hasSent = 0) {
