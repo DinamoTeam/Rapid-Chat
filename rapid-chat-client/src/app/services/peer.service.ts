@@ -120,7 +120,11 @@ export class PeerService {
         break;
       case MessageType.RequestAllMessages:
         console.log("RequestAllMessages from " + fromConn.peer);
-        this.sendOldMessages(fromConn);
+        if (!this.hasReceivedAllMessages) {
+          console.log("I haven't received allMessages yet. Can't send to that peer");
+        } else {
+          this.sendOldMessages(fromConn);
+        }
         break;
       case MessageType.Acknowledge:
         const indexDelete = this.messagesToBeAcknowledged.findIndex(
@@ -152,6 +156,7 @@ export class PeerService {
     if (peerIds.length === 0) {
       // DO NOTHING
       console.log("I am the first one in this room");
+      this.hasReceivedAllMessages = true;
     } else {
       this.peerIdsInRoom = peerIds;
       // this.connectToPeer(peerIds[0], true);
@@ -161,6 +166,7 @@ export class PeerService {
       setTimeout(function () {
         if (!that.hasReceivedAllMessages) {
           // The peer we intended to get old messages from just left the room or is taking to long to answer
+          alert('The peer we intended to get old messages from just left the room or is taking to long to answer. Reloading');
           window.location.reload(true);
         }
       }, 4000);
@@ -242,7 +248,7 @@ export class PeerService {
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
           // Either room not exists or has been deleted
           this.router.navigate(['/']);
-          console.log("WEIRD");
+          alert('Room not exists, navigating back to home');
         }
         this.handleFirstJoinRoom(peerIds.result);
       },
