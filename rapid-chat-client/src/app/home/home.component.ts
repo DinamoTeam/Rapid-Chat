@@ -64,7 +64,6 @@ export class HomeComponent implements OnInit {
     this.peerService.sendMessage(this.messageToSend.value);
     this.messages = this.peerService.getAllMessages();
     this.messageForm.setValue({ 'messageToSend': ''});
-    window.scrollTo(0, document.body.scrollHeight + 2000);
   }
 
   getAllPeerIds() {

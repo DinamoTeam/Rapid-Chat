@@ -1,6 +1,7 @@
 import { EventEmitter, Injectable } from "@angular/core";
 import { Message, MessageType } from "../shared/Message";
 import { RoomService } from "./room.service";
+import { Router } from '@angular/router';
 
 declare const Peer: any;
 
@@ -21,7 +22,10 @@ export class PeerService {
   connectionEstablished = new EventEmitter<Boolean>();
   infoBroadcasted = new EventEmitter<any>();
 
-  constructor(private roomService: RoomService) {
+  constructor(
+    private roomService: RoomService,
+    private router: Router
+) {
     // Create a new peer and connect to peerServer. We can get our id from this.peer.id
     this.peer = new Peer({ host: "localhost", port: 9000, path: "/myapp" });
     this.connectToPeerServer();
@@ -156,9 +160,8 @@ export class PeerService {
       const that = this;
       setTimeout(function () {
         if (!that.hasReceivedAllMessages) {
-          alert(
-            "Hey Giang, please refresh browser! The peer we intended to get old messages from just left the room or is taking to long to answer"
-          );
+          // The peer we intended to get old messages from just left the room or is taking to long to answer
+          window.location.reload(true);
         }
       }, 4000);
     }
@@ -237,10 +240,9 @@ export class PeerService {
       (peerIds) => {
         console.log(peerIds);
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
-          alert(
-            "Either room not exists or has been deleted. Please reroute to home, Giang"
-          );
-          throw new Error("Either room not exists or has been deleted");
+          // Either room not exists or has been deleted
+          this.router.navigate(['/']);
+          console.log("WEIRD");
         }
         this.handleFirstJoinRoom(peerIds.result);
       },

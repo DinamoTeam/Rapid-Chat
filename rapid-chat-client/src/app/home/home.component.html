@@ -1,4 +1,3 @@
-<!--<h1>My id {{ myPeerId }}</h1>-->
 <div class="container-fluid mt-2">
   <div *ngFor="let mess of messages">
     <app-message-bubble [senderName]="mess.fromPeerId" [content]="mess.content">
