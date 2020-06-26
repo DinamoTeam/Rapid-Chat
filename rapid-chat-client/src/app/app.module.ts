@@ -9,13 +9,15 @@ import { HttpClientModule } from '@angular/common/http';
 import { HomeComponent } from './home/home.component';
 import { HeaderComponent } from './header/header.component';
 import { MessageBubbleComponent } from './message-bubble/message-bubble.component';
+import { ChatComponent } from './chat/chat.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
     HeaderComponent,
-    MessageBubbleComponent
+    MessageBubbleComponent,
+    ChatComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,30 @@
+.btn-orange {
+  color: white;
+  background-color: #cb6318;
+}
+
+.cover {
+  padding: 0 1.5rem;
+  display: flex;
+  height: 80vh;
+  align-items: center;
+}
+
+.cover .btn-lg {
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 72px;
+  }
+}
+
+p {
+  margin-top: 20px;
+}

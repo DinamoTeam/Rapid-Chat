@@ -1,0 +1,26 @@
+<div class="container-fluid mt-2">
+  <div *ngFor="let mess of messages">
+    <app-message-bubble [senderName]="mess.fromPeerId" [content]="mess.content">
+    </app-message-bubble>
+  </div>
+</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div class="container">
+  <form
+    class="form-container fixed-bottom mx-3"
+    [formGroup]="messageForm"
+    (ngSubmit)="sendMessage(messageForm.value)"
+  >
+    <div class="form-group">
+      <input
+        type="text"
+        formControlName="messageToSend"
+        class="form-control"
+        placeholder="Aa"
+        autofocus
+      />
+    </div>
+  </form>
+</div>
