@@ -33,7 +33,7 @@ In the client's folder. Restore all NPM packages by running
 npm install
 ```
 Config PeerServer
-Edit file rapid-chat-client/node_modules/peer/node_modules/ws/index.js by adding the last 2 lines
+Replace the content in file Rapid-Chat\rapid-chat-client\node_modules\peer\node_modules\ws\index.js with the following
 
 ```js
 'use strict';
