@@ -23,4 +23,9 @@
   <ItemGroup>
     <Folder Include="rapid-chat-client\src\app\shared\"/>
   </ItemGroup>
+   <Target Name="AddGeneratedContentItems" BeforeTargets="AssignTargetPaths" DependsOnTargets="PrepareForPublish">
+    <ItemGroup>
+      <Content Include="wwwroot/**" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);@(Content)" />
+    </ItemGroup>
+  </Target>
 </Project>

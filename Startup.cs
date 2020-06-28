@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -56,10 +57,19 @@ namespace RapidChat
 			{
 				app.UseHsts();
 			}
-
-			app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+			app.UseDeveloperExceptionPage();
 			app.UseHttpsRedirection();
-			app.UseMvc();
+			app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+
+			app.UseDefaultFiles();
+			app.UseStaticFiles();
+			app.UseMvc(routes =>
+			{
+				routes.MapSpaFallbackRoute(
+					name: "spa-fallback",
+					defaults: new {controller ="Fallback", action = "Index"}
+				);
+			});
 		}
 	}
 }
