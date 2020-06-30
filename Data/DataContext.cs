@@ -33,17 +33,13 @@ namespace RapidChat.Data
         {
             modelBuilder.Entity<Peers>(entity =>
             {
+                entity.HasKey(e => e.PeerId);
+
                 entity.ToTable("peers");
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.PeerId).ValueGeneratedNever();
 
-                entity.Property(e => e.PeerId)
-                    .IsRequired()
-                    .HasColumnType("VARCHAR(128)");
-
-                entity.Property(e => e.RoomName)
-                    .IsRequired()
-                    .HasColumnType("VARCHAR(128)");
+                entity.Property(e => e.RoomName).IsRequired();
 
                 entity.HasOne(d => d.RoomNameNavigation)
                     .WithMany(p => p.Peers)
@@ -57,9 +53,7 @@ namespace RapidChat.Data
 
                 entity.ToTable("rooms");
 
-                entity.Property(e => e.RoomName)
-                    .HasColumnType("VARCHAR(128)")
-                    .ValueGeneratedNever();
+                entity.Property(e => e.RoomName).ValueGeneratedNever();
             });
         }
     }
