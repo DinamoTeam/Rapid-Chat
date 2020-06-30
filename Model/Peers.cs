@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace RapidChat
+namespace RapidChat.Model
 {
     public partial class Peers
     {

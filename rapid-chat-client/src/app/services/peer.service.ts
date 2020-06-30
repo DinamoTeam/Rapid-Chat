@@ -28,7 +28,8 @@ export class PeerService {
 ) {
     // Create a new peer and connect to peerServer. We can get our id from this.peer.id
     // this.peer = new Peer({ host: "https://dinamopeerserver.azurewebsites.net/", port: 443, secure: true });
-    this.peer = new Peer({ host: "localhost", port: 80});
+    //this.peer = new Peer({ host: "localhost", port: 80});
+    this.peer = new Peer();
     this.connectToPeerServer();
     this.registerConnectToMeEvent();
     this.reconnectToPeerServer();

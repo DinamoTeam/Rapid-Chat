@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
-using Rapid_Chat.Data;
-using Rapid_Chat.Model;
+using RapidChat.Data;
+using RapidChat.Model;
 
 namespace Rapid_Chat.Controllers
 {
@@ -24,7 +24,7 @@ namespace Rapid_Chat.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<string>>> GetPeerIds(string roomName)
         {
-            return await _database.peers.Where(peer => peer.RoomName == roomName)
+            return await _database.Peers.Where(peer => peer.RoomName == roomName)
                                         .Select(peer => peer.PeerId)
                                         .ToListAsync();
         }
@@ -34,8 +34,16 @@ namespace Rapid_Chat.Controllers
         public async Task<ActionResult<string>> JoinNewRoom(string peerId)
 		{
             string roomName = GenerateRoomName();
-            _database.rooms.Add(new Room(roomName));
-            _database.peers.Add(new Peer(peerId, roomName));
+			_database.Rooms.Add(new Rooms
+			{
+				RoomName = roomName
+			});
+
+			_database.Peers.Add(new Peers() { 
+                PeerId = peerId,
+                RoomName = roomName
+            });
+
             await _database.SaveChangesAsync();
 
             return roomName;
@@ -47,10 +55,14 @@ namespace Rapid_Chat.Controllers
 		{
             if (await RoomExist(roomName))
             {
-                var peerIds = _database.peers.Where(p => p.RoomName == roomName)
+                var peerIds = _database.Peers.Where(p => p.RoomName == roomName)
                                          .Select(p => p.PeerId)
                                          .ToListAsync();
-                _database.peers.Add(new Peer(peerId, roomName));
+                _database.Peers.Add(new Peers()
+                {
+                    PeerId = peerId,
+                    RoomName = roomName
+                });
                 await _database.SaveChangesAsync();
                 return Ok(peerIds);
             }
@@ -59,7 +71,7 @@ namespace Rapid_Chat.Controllers
 
         private async Task<bool> RoomExist(string roomName)
         {
-            if (await  _database.rooms.AnyAsync(r => r.RoomName == roomName))
+            if (await  _database.Rooms.AnyAsync(r => r.RoomName == roomName))
             {
                 return true;
             }
@@ -72,7 +84,7 @@ namespace Rapid_Chat.Controllers
             {
                 string randomName = Guid.NewGuid().ToString();
 
-                if (_database.rooms.FirstOrDefault(r => r.RoomName == randomName) == null)
+                if (_database.Rooms.FirstOrDefault(r => r.RoomName == randomName) == null)
                 {
                     return randomName;
                 }
@@ -84,18 +96,19 @@ namespace Rapid_Chat.Controllers
         public async Task<IActionResult> DeletePeer(string peerId)
 		{
             // peer.PeerID is unique by itself. It is a UUID
-            Peer peer = _database.peers.FirstOrDefault(p => p.PeerId == peerId);
+            Peers peer = _database.Peers.FirstOrDefault(p => p.PeerId == peerId);
+
             if (peer != null)
             {
-                _database.peers.Remove(peer);
+                _database.Peers.Remove(peer);
                 await _database.SaveChangesAsync();
             }
 
             // Delete room if nobody's in it
-            if (!_database.peers.Any(p => p.RoomName == peer.RoomName))
+            if (!_database.Peers.Any(p => p.RoomName == peer.RoomName))
             {
-                Room room = _database.rooms.FirstOrDefault(r => r.RoomName == peer.RoomName);
-                _database.rooms.Remove(room);
+                Rooms room = _database.Rooms.FirstOrDefault(r => r.RoomName == peer.RoomName);
+                _database.Rooms.Remove(room);
                 await _database.SaveChangesAsync();
             }
 

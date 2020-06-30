@@ -1,13 +1,66 @@
+﻿using System;
 using Microsoft.EntityFrameworkCore;
-using Rapid_Chat.Model;
+using Microsoft.EntityFrameworkCore.Metadata;
+using RapidChat.Model;
+using Microsoft.IdentityModel.Protocols;
+using System.Configuration;
 
-namespace Rapid_Chat.Data
+namespace RapidChat.Data
 {
-    public class DataContext : DbContext
+    public partial class DataContext : DbContext
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options) {}
-        public DbSet<Room> rooms { get; set; }
-        public DbSet<Peer> peers { get; set; }
+        public DataContext()
+        {
+        }
 
+        public DataContext(DbContextOptions<DataContext> options)
+            : base(options)
+        {
+        }
+
+        public virtual DbSet<Peers> Peers { get; set; }
+        public virtual DbSet<Rooms> Rooms { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlite(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString);
+            }
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Peers>(entity =>
+            {
+                entity.ToTable("peers");
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.PeerId)
+                    .IsRequired()
+                    .HasColumnType("VARCHAR(128)");
+
+                entity.Property(e => e.RoomName)
+                    .IsRequired()
+                    .HasColumnType("VARCHAR(128)");
+
+                entity.HasOne(d => d.RoomNameNavigation)
+                    .WithMany(p => p.Peers)
+                    .HasForeignKey(d => d.RoomName)
+                    .OnDelete(DeleteBehavior.ClientSetNull);
+            });
+
+            modelBuilder.Entity<Rooms>(entity =>
+            {
+                entity.HasKey(e => e.RoomName);
+
+                entity.ToTable("rooms");
+
+                entity.Property(e => e.RoomName)
+                    .HasColumnType("VARCHAR(128)")
+                    .ValueGeneratedNever();
+            });
+        }
     }
 }
