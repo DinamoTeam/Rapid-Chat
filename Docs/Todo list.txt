@@ -1,0 +1,11 @@
+1.	Add copy share link button
+2.	Refresh page after reroute to home
+3.	Republish after every push to Git
+4.	Tạo nút 'Send'
+5.	Auto scroll xuống
+6.	Giữ lại cái alert nào informative với user, chuyển thành console.log với những cái nào chỉ informative với mình
+7.	Get rid of những cái console.log ko quan trọng
+8.	Clean up files
+9.	Ê Giang có biết cái Bootswatch ko? Mình có thể chọn theme, install, rồi nó sẽ override cái màu của Bootstrap. Nó nhiều bộ theme khá đẹp
+		Ông Udemy dạy => Minh có thể install cái này và thử chỉnh màu
+10. Setup Resolver để chỉ hiện cái giao diện chat lên khi đã nhận được hết old messages
