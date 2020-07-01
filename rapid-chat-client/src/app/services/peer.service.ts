@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from "@angular/core";
 import { Message, MessageType } from "../shared/Message";
 import { RoomService } from "./room.service";
-import { Router } from '@angular/router';
+import { Router } from "@angular/router";
 
 declare const Peer: any;
 
@@ -22,14 +22,14 @@ export class PeerService {
   connectionEstablished = new EventEmitter<Boolean>();
   infoBroadcasted = new EventEmitter<any>();
 
-  constructor(
-    private roomService: RoomService,
-    private router: Router
-) {
+  constructor(private roomService: RoomService, private router: Router) {
     // Create a new peer and connect to peerServer. We can get our id from this.peer.id
-    // this.peer = new Peer({ host: "https://dinamopeerserver.azurewebsites.net/", port: 443, secure: true });
-    //this.peer = new Peer({ host: "localhost", port: 80});
-    this.peer = new Peer();
+    /*this.peer = new Peer({
+      host: "dinamopeerserver.azurewebsites.net/",
+      path: "/..",
+      secure: true,
+    }); */ // Connect to dinamoPeerServer
+    this.peer = new Peer(); // Connect to peerJs's cloud peerServer
     this.connectToPeerServer();
     this.registerConnectToMeEvent();
     this.reconnectToPeerServer();
@@ -62,7 +62,10 @@ export class PeerService {
   }
 
   private connectToPeer(otherPeerId: any, getOldMessages: boolean) {
-    const conn = this.peer.connect(otherPeerId, { reliable: true, serialization: 'json' });
+    const conn = this.peer.connect(otherPeerId, {
+      reliable: true,
+      serialization: "json",
+    });
     this.addUnique([conn], this.connectionsIAmHolding);
 
     if (getOldMessages === true) {
@@ -123,7 +126,9 @@ export class PeerService {
       case MessageType.RequestAllMessages:
         console.log("RequestAllMessages from " + fromConn.peer);
         if (!this.hasReceivedAllMessages) {
-          console.log("I haven't received allMessages yet. Can't send to that peer");
+          console.log(
+            "I haven't received allMessages yet. Can't send to that peer"
+          );
         } else {
           this.sendOldMessages(fromConn);
         }
@@ -168,7 +173,9 @@ export class PeerService {
       setTimeout(function () {
         if (!that.hasReceivedAllMessages) {
           // The peer we intended to get old messages from just left the room or is taking to long to answer
-          alert('The peer we intended to get old messages from just left the room or is taking to long to answer. Reloading');
+          alert(
+            "The peer we intended to get old messages from just left the room or is taking to long to answer. Reloading"
+          );
           window.location.reload(true);
         }
       }, 4000);
@@ -249,10 +256,10 @@ export class PeerService {
         console.log(peerIds);
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
           // Either room not exists or has been deleted
-          this.router.navigate(['/']);
-          alert('Room not exists, navigating back to home');
+          this.router.navigate(["/"]);
+          alert("Room not exists, navigating back to home");
         }
-        this.handleFirstJoinRoom(peerIds.result);
+        this.handleFirstJoinRoom(peerIds);
       },
       (error) => {
         console.error(error);

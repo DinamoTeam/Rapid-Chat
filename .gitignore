@@ -5,8 +5,7 @@
 
 wwwroot
 
-# database
-*.db
+
 
 # User-specific files
 *.rsuser
