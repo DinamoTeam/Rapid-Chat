@@ -24,12 +24,12 @@ export class PeerService {
 
   constructor(private roomService: RoomService, private router: Router) {
     // Create a new peer and connect to peerServer. We can get our id from this.peer.id
-    /*this.peer = new Peer({
-      host: "dinamopeerserver.azurewebsites.net/",
+    this.peer = new Peer({
+      host: "dinamopeerserver.herokuapp.com/",
       path: "/..",
       secure: true,
-    }); */ // Connect to dinamoPeerServer
-    this.peer = new Peer(); // Connect to peerJs's cloud peerServer
+    }); // Connect to our own peerServer
+    // this.peer = new Peer(); // Connect to default peerServer
     this.connectToPeerServer();
     this.registerConnectToMeEvent();
     this.reconnectToPeerServer();
