@@ -1,6 +1,9 @@
 # Rapid-Chat
 
-## Chat rooms using peer to peer (PeerJS)
+## A chat app that allows you to create groups, invite friends, and chat anonymously! Check it out [here](https://rapidchat.azurewebsites.net/)!
+
+<img src="./images/HomeView.png" height=400px style="margin-right: 10px">
+<img src="./images/ChatView.png" height=400px>
 
 ## **Development setup**
 
@@ -32,7 +35,7 @@ In the client's folder. Restore all NPM packages by running
 ```shell
 npm install
 ```
-Config PeerServer
+This project uses peer to peer (PeerJS). Config PeerServer
 Replace the content in file Rapid-Chat\rapid-chat-client\node_modules\peer\node_modules\ws\index.js with the following
 
 ```js
