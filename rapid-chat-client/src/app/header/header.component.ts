@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { windowWhen } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
@@ -22,8 +23,8 @@ export class HeaderComponent implements OnInit {
     this.isExpanded = !this.isExpanded;
   }
 
-  onBtnHomeClick() {
+  goHome() {
     this.isExpanded = false;
-    this.router.navigate(['/']);
+    window.location.replace("/");
   }
 }
