@@ -1,14 +1,30 @@
 <header>
-  <nav class='navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3'>
+  <nav
+    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+  >
     <div class="container">
-      <a class="navbar-brand" [routerLink]='["."]' (click)="goHome()">Rapid Chat</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-label="Toggle navigation"
-              [attr.aria-expanded]="isExpanded" (click)="toggle()">
+      <a class="navbar-brand" [routerLink]="['.']" (click)="goHome()"
+        >Rapid Chat</a
+      >
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target=".navbar-collapse"
+        aria-label="Toggle navigation"
+        [attr.aria-expanded]="isExpanded"
+        (click)="toggle()"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse" [ngClass]='{"show": isExpanded}'>
+      <div
+        class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse"
+        [ngClass]="{ show: isExpanded }"
+      >
         <div class="navbar-nav flex-grow">
-          <a class="nav-item text-dark" role="button" (click)="onBtnHomeClick()">Invite</a>
+          <a class="nav-item text-dark" role="button" (click)="onBtnHomeClick()"
+            >Invite</a
+          >
         </div>
       </div>
     </div>
