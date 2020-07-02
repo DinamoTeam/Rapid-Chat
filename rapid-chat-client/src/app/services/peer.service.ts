@@ -124,7 +124,6 @@ export class PeerService {
         this.connectToTheRestInRoom(fromConn.peer);
         break;
       case MessageType.RequestAllMessages:
-        console.log("RequestAllMessages from " + fromConn.peer);
         if (!this.hasReceivedAllMessages) {
           console.log(
             "I haven't received allMessages yet. Can't send to that peer"
@@ -173,7 +172,7 @@ export class PeerService {
       setTimeout(function () {
         if (!that.hasReceivedAllMessages) {
           // The peer we intended to get old messages from just left the room or is taking to long to answer
-          alert(
+          console.log(
             "The peer we intended to get old messages from just left the room or is taking to long to answer. Reloading"
           );
           window.location.reload(true);
@@ -203,9 +202,6 @@ export class PeerService {
     );
     conn.send(JSON.stringify(message));
     this.messagesToBeAcknowledged.push(message);
-    console.log(
-      "Send old messages to " + conn.peer + " with time: " + message.time
-    );
     const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
     setTimeout(function () {
       that.acknowledgeOrResend(message);
@@ -256,7 +252,8 @@ export class PeerService {
         console.log(peerIds);
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
           // Either room not exists or has been deleted
-          this.router.navigate(["/"]);
+
+          window.location.replace("/");
           alert("Room not exists, navigating back to home");
         }
         this.handleFirstJoinRoom(peerIds);
@@ -307,9 +304,6 @@ export class PeerService {
       );
       // Has sent for more than 5 times
       if (hasSent > 5) {
-        console.error(
-          "Please tell Minh if you see this! PeerServer should have deleted this user from Db???"
-        );
         this.connectionsIAmHolding = this.connectionsIAmHolding.filter(
           (connection) => connection.peer !== conn.peer
         );

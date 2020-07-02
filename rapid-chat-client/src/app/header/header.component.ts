@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { windowWhen } from 'rxjs/operators';
 
 @Component({
   selector: 'app-header',
@@ -39,5 +40,12 @@ export class HeaderComponent implements OnInit {
     this.showSuccessAlert = true;
     this.isExpanded = false;
     alert("Link copied to clipboard!");
+	
+  }
+
+  goHome() {
+    this.isExpanded = false;
+    window.location.replace("/");
+
   }
 }
