@@ -2,8 +2,10 @@
 
 ## A chat app that allows you to create groups, invite friends, and chat anonymously! Check it out [here](https://rapidchat.azurewebsites.net/)!
 
+<div>
 <img src="./images/HomeView.png" height=400px style="margin-right: 10px">
 <img src="./images/ChatView.png" height=400px>
+</div>
 
 ## **Development setup**
 
