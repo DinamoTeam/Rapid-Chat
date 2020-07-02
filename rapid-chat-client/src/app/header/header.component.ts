@@ -22,8 +22,22 @@ export class HeaderComponent implements OnInit {
     this.isExpanded = !this.isExpanded;
   }
 
+  showSuccessAlert = false;
   onBtnHomeClick() {
+    const selBox = document.createElement('textarea');
+    selBox.style.position = 'fixed';
+    selBox.style.left = '0';
+    selBox.style.top = '0';
+    selBox.style.opacity = '0';
+    selBox.value = window.location.href;
+    document.body.appendChild(selBox);
+    selBox.focus();
+    selBox.select();
+    document.execCommand('copy');
+    document.body.removeChild(selBox);
+
+    this.showSuccessAlert = true;
     this.isExpanded = false;
-    this.router.navigate(['/']);
+    alert("Link copied to clipboard!");
   }
 }
