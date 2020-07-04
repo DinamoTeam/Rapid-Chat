@@ -1,12 +1,16 @@
+<div>
 <div class="container-fluid mt-2">
   <div *ngFor="let mess of messages">
     <app-message-bubble [senderName]="mess.fromPeerId" [content]="mess.content">
     </app-message-bubble>
   </div>
+
 </div>
+
 <div>&nbsp;</div>
 <div>&nbsp;</div>
 <div>&nbsp;</div>
+
 <div class="container">
   <form
     class="form-container fixed-bottom ml-3 mr-2"
@@ -30,4 +34,5 @@
       </button>
     </div>
   </form>
+</div>
 </div>

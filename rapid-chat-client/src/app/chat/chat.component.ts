@@ -51,7 +51,10 @@ export class ChatComponent implements OnInit {
       this.ngZone.run(() => {
         if (message === BroadcastInfo.UpdateAllMessages) {
           this.messages = this.peerService.getAllMessages();
-        } else if (message == BroadcastInfo.RoomName) {
+          console.log("YEAH");
+          const w = window;
+          setTimeout(() => w.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
+        } else if (message === BroadcastInfo.RoomName) {
           this.roomName = this.peerService.getRoomName();
           this.location.replaceState("/chat/" + this.roomName);
         }
@@ -64,5 +67,7 @@ export class ChatComponent implements OnInit {
     this.peerService.sendMessage(this.messageToSend.value);
     this.messages = this.peerService.getAllMessages();
     this.messageForm.setValue({ messageToSend: "" });
+    const w = window;
+    setTimeout(() => w.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
   }
 }
