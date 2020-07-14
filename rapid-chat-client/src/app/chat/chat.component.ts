@@ -10,9 +10,8 @@ import { FormControl, FormGroup, NgForm, FormBuilder } from "@angular/forms";
   styleUrls: ["./chat.component.css"],
 })
 export class ChatComponent implements OnInit {
-  peerConnectToId: any; // binded with html input
   messageForm: FormGroup;
-  messageToSend: FormControl; // binded with html text area
+  messageToSend: FormControl; 
   myPeerId: string;
   messages: any[] = [];
   roomName: string;
