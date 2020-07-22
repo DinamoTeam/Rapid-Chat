@@ -28,6 +28,16 @@ export class PeerService {
       host: "dinamopeerserver.herokuapp.com/",
       path: "/..",
       secure: true,
+      config: {
+        iceServers: [
+          { url: 'stun:relay.backups.cz' },
+          {
+            url: 'turn:relay.backups.cz',
+            username: 'webrtc',
+            credential: 'webrtc',
+          },
+        ],
+      }
     }); // Connect to our own peerServer
     // this.peer = new Peer(); // Connect to default peerServer
     this.connectToPeerServer();
