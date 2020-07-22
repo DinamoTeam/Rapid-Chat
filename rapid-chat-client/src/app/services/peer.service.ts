@@ -15,6 +15,7 @@ export class PeerService {
   private roomName: string;
   private connToGetOldMessages: any;
   private peerIdsInRoom: any[] = [];
+  private peerIdsToSendOldChatMessages: string[] = [];
   private connectionsIAmHolding: any[] = [];
   private previousMessages: Message[] = [];
   private messagesToBeAcknowledged: Message[] = [];
@@ -100,6 +101,11 @@ export class PeerService {
       if (this.connToGetOldMessages === conn) {
         this.requestOldMessages(conn);
       }
+      // If we need to send this peer old chat messages
+      if (this.peerIdsToSendOldChatMessages.findIndex(id => id === conn.peer) !== -1) {
+        this.sendOldMessages(conn);
+        this.peerIdsToSendOldChatMessages = this.peerIdsToSendOldChatMessages.filter(id => id !== conn.peer);
+      }
     }); // When the connection first establish
     conn.on(ConnectionEvent.Data, (message) =>
       this.handleMessageFromPeer(message, conn)
@@ -139,7 +145,11 @@ export class PeerService {
             "I haven't received allMessages yet. Can't send to that peer"
           );
         } else {
-          this.sendOldMessages(fromConn);
+          if (this.connectionsIAmHolding.findIndex(conn => conn.peer === fromConn.peer) !== -1) {
+            this.sendOldMessages(fromConn); // Send now
+          } else {
+            this.peerIdsToSendOldChatMessages.push(fromConn.peer); // Send when open
+          }
         }
         break;
       case MessageType.Acknowledge:
