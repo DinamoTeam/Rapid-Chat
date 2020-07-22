@@ -4,7 +4,8 @@
 
 <div>
 <img src="./images/HomeView.png" height=400px style="margin-right: 10px">
-<img src="./images/ChatView.png" height=400px>
+<img src="./images/ChatView.png" height=400px style="margin-right: 10px">
+<img src="./images/EmojiView.png" height=400px>
 </div>
 
 ## **Development setup**
