@@ -75,5 +75,6 @@ export class ChatComponent implements OnInit {
     this.messages = this.peerService.getAllMessages();
     this.messageForm.setValue({ messageToSend: "" });
     setTimeout(() => window.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
+    this.showEmojiPicker = false;
   }
 }

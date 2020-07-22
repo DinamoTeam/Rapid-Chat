@@ -20,9 +20,9 @@
         [formGroup]="messageForm"
         (ngSubmit)="sendMessage(messageForm.value)">
     <div class="form-group d-flex">
-      <button class="btn btn-light" (click)="toggleEmojiPicker()">
+      <a class="btn btn-light" (click)="toggleEmojiPicker()">
         <i class="fa fa-smile-o fa-lg"></i>
-      </button>
+      </a>
       <input type="text"
              formControlName="messageToSend"
              class="form-control"

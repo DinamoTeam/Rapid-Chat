@@ -27,5 +27,4 @@ export const enum MessageType {
   Message = 0,
   AllMessages = 1,
   RequestAllMessages = 2,
-  Acknowledge = 3,
 }

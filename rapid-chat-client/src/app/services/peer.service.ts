@@ -1,7 +1,6 @@
 import { EventEmitter, Injectable } from "@angular/core";
 import { Message, MessageType } from "../shared/Message";
 import { RoomService } from "./room.service";
-import { Router } from "@angular/router";
 
 declare const Peer: any;
 
@@ -9,7 +8,6 @@ declare const Peer: any;
   providedIn: "root",
 })
 export class PeerService {
-  private timeWaitForAck = 10000; // Millisecond
   private time = 0;
   private peer: any;
   private roomName: string;
@@ -18,12 +16,11 @@ export class PeerService {
   private peerIdsToSendOldChatMessages: string[] = [];
   private connectionsIAmHolding: any[] = [];
   private previousMessages: Message[] = [];
-  private messagesToBeAcknowledged: Message[] = [];
   private hasReceivedAllMessages = false;
   connectionEstablished = new EventEmitter<Boolean>();
   infoBroadcasted = new EventEmitter<any>();
 
-  constructor(private roomService: RoomService, private router: Router) {
+  constructor(private roomService: RoomService) {
     // Create a new peer and connect to peerServer. We can get our id from this.peer.id
     this.peer = new Peer({
       host: "dinamopeerserver.herokuapp.com/",
@@ -119,24 +116,12 @@ export class PeerService {
       case MessageType.Message:
         this.addUniqueMessages([message], this.previousMessages);
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
-        // Send Acknowledgement
-        fromConn.send(
-          JSON.stringify(
-            new Message(null, MessageType.Acknowledge, null, null, message.time)
-          )
-        );
         break;
       case MessageType.AllMessages:
         this.hasReceivedAllMessages = true;
         const messages: Message[] = JSON.parse(message.content);
         this.addUniqueMessages(messages, this.previousMessages);
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
-        // Send Acknowledgement
-        fromConn.send(
-          JSON.stringify(
-            new Message(null, MessageType.Acknowledge, null, null, message.time)
-          )
-        );
         this.connectToTheRestInRoom(fromConn.peer);
         break;
       case MessageType.RequestAllMessages:
@@ -150,14 +135,6 @@ export class PeerService {
           } else {
             this.peerIdsToSendOldChatMessages.push(fromConn.peer); // Send when open
           }
-        }
-        break;
-      case MessageType.Acknowledge:
-        const indexDelete = this.messagesToBeAcknowledged.findIndex(
-          (mes) => mes.time === message.time
-        );
-        if (indexDelete !== -1) {
-          this.messagesToBeAcknowledged.splice(indexDelete, 1);
         }
         break;
       default:
@@ -221,11 +198,6 @@ export class PeerService {
       this.time++
     );
     conn.send(JSON.stringify(message));
-    this.messagesToBeAcknowledged.push(message);
-    const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
-    setTimeout(function () {
-      that.acknowledgeOrResend(message);
-    }, that.timeWaitForAck);
   }
   //*************************************************************
 
@@ -258,7 +230,7 @@ export class PeerService {
   createNewRoom() {
     this.roomService.joinNewRoom(this.peer.id).subscribe((data: string) => {
       this.roomName = data;
-      console.log("roomName: " + this.roomName);
+
       // No peerId
       this.handleFirstJoinRoom([]);
       this.infoBroadcasted.emit(BroadcastInfo.RoomName);
@@ -271,10 +243,8 @@ export class PeerService {
       (peerIds) => {
         console.log(peerIds);
         if (peerIds.length === 1 && peerIds[0] === "ROOM_NOT_EXIST") {
-          // Either room not exists or has been deleted
-
-          window.location.replace("/");
           alert("Room not exists, navigating back to home");
+          window.location.replace("/");
         }
         this.handleFirstJoinRoom(peerIds);
       },
@@ -303,43 +273,8 @@ export class PeerService {
       );
       const messageInJson = JSON.stringify(messageToSend);
       conn.send(messageInJson);
-      this.messagesToBeAcknowledged.push(messageToSend);
-      const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
-      setTimeout(function () {
-        that.acknowledgeOrResend(messageToSend);
-      }, that.timeWaitForAck);
     });
     this.time++;
-  }
-
-  acknowledgeOrResend(mess: Message, hasSent = 0) {
-    // If message hasn't been received
-    if (
-      this.messagesToBeAcknowledged.find(
-        (message) => message.time === mess.time
-      )
-    ) {
-      const conn = this.connectionsIAmHolding.find(
-        (connection) => connection.peer === mess.toPeerId
-      );
-      // Has sent for more than 5 times
-      if (hasSent > 5) {
-        this.connectionsIAmHolding = this.connectionsIAmHolding.filter(
-          (connection) => connection.peer !== conn.peer
-        );
-        return;
-      }
-
-      // If that peer hasn't disconnect
-      if (conn) {
-        conn.send(JSON.stringify(mess));
-        console.log("Waiting too long for ack. Resent messages");
-        const that = this; // setTimeOut will not know what 'this' is => Store 'this' in a variable
-        setTimeout(function () {
-          that.acknowledgeOrResend(mess, hasSent + 1);
-        }, that.timeWaitForAck);
-      }
-    }
   }
 
   hasReceivedMessage(message: Message): boolean {
@@ -365,10 +300,6 @@ export class PeerService {
 
   getAllPeerIds(): string[] {
     return this.connectionsIAmHolding.map((conn) => conn.peer);
-  }
-
-  getMessagesToBeAck(): any[] {
-    return this.messagesToBeAcknowledged;
   }
 }
 
