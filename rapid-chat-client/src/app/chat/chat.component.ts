@@ -15,6 +15,7 @@ export class ChatComponent implements OnInit {
   myPeerId: string;
   messages: any[] = [];
   roomName: string;
+  showEmojiPicker: boolean = false;
 
   constructor(
     private peerService: PeerService,
@@ -42,6 +43,10 @@ export class ChatComponent implements OnInit {
     this.messageForm = this.formBuilder.group({
       messageToSend: this.messageToSend,
     });
+  }
+
+  toggleEmojiPicker() {
+    this.showEmojiPicker = !this.showEmojiPicker;
   }
 
   addEmoji(event) {

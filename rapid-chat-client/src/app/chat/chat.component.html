@@ -12,12 +12,17 @@
 <div>&nbsp;</div>
 
 <div class="container">
-  <emoji-mart set="messenger" [showPreview]="false" (emojiClick)="addEmoji($event)"></emoji-mart>
+  <!-- Emoji Picker-->
+  <emoji-mart *ngIf="showEmojiPicker" set="messenger" [showPreview]="false" (emojiClick)="addEmoji($event)"></emoji-mart>
 
+  <!-- Input Box-->
   <form class="form-container fixed-bottom ml-3 mr-2"
         [formGroup]="messageForm"
         (ngSubmit)="sendMessage(messageForm.value)">
     <div class="form-group d-flex">
+      <button class="btn btn-light" (click)="toggleEmojiPicker()">
+        <i class="fa fa-smile-o fa-lg"></i>
+      </button>
       <input type="text"
              formControlName="messageToSend"
              class="form-control"

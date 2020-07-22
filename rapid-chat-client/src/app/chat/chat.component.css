@@ -10,3 +10,9 @@ img {
   background-color: initial;
   outline: none;
 }
+
+emoji-mart {
+  position: absolute;
+  bottom: 50px;
+  left: 20px;
+}
