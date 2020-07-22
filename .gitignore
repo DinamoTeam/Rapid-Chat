@@ -353,3 +353,6 @@ MigrationBackup/
 
 # Package Lock
 package-lock.json
+
+# Database
+*.db

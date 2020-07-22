@@ -44,6 +44,11 @@ export class ChatComponent implements OnInit {
     });
   }
 
+  addEmoji(event) {
+    console.log(event);
+    this.messageToSend.patchValue(this.messageToSend.value + event.emoji.native);
+  }
+
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
     this.peerService.infoBroadcasted.subscribe((message: any) => {
