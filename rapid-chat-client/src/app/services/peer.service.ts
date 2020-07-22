@@ -9,7 +9,7 @@ declare const Peer: any;
   providedIn: "root",
 })
 export class PeerService {
-  private timeWaitForAck = 1000; // Millisecond
+  private timeWaitForAck = 10000; // Millisecond
   private time = 0;
   private peer: any;
   private roomName: string;
@@ -187,7 +187,7 @@ export class PeerService {
           );
           window.location.reload(true);
         }
-      }, 4000);
+      }, 1000000);
     }
   }
 

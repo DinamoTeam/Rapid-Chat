@@ -52,9 +52,37 @@ WebSocket.Sender = require('./lib/sender');
 
 module.exports = WebSocket;
 
-// ADD THESE 2 LINES
-var PeerServer = require('peer').PeerServer;
-var server = PeerServer({ port: 9000, path: '/myapp' });
+
+const PeerServer = require('peer').PeerServer;
+const server = PeerServer({
+    port: 9000, 
+    path: '/myapp'});
+
+const baseUrl = 'https://localhost:44336/api/Room/';
+const https = require('https');
+
+server.on('connection', (client) => {/* Do nothing */});
+server.on('disconnect', (client) => handleDisconnect(client));
+
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0; 
+
+function handleDisconnect(client) {
+    // Delete peer from Db
+    const url = baseUrl + "DeletePeer?peerId=" + client.getId();
+    https.get(url, response => {
+        let data = '';
+        response.on('data', chunk => {
+            data += chunk;
+        })
+        response.on('end', () => {
+            console.log(data);
+            console.log('Deleted peer with id: ' + client.getId() + ' from database');
+        })
+    })
+    .on('error', err => {
+        console.log('Error: ' + err.message);
+    });
+}
 ```
 
 Start PeerServer

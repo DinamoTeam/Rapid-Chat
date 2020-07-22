@@ -10,9 +10,8 @@ import { FormControl, FormGroup, NgForm, FormBuilder } from "@angular/forms";
   styleUrls: ["./chat.component.css"],
 })
 export class ChatComponent implements OnInit {
-  peerConnectToId: any; // binded with html input
   messageForm: FormGroup;
-  messageToSend: FormControl; // binded with html text area
+  messageToSend: FormControl; 
   myPeerId: string;
   messages: any[] = [];
   roomName: string;
@@ -45,15 +44,18 @@ export class ChatComponent implements OnInit {
     });
   }
 
+  addEmoji(event) {
+    console.log(event);
+    this.messageToSend.patchValue(this.messageToSend.value + event.emoji.native);
+  }
+
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
     this.peerService.infoBroadcasted.subscribe((message: any) => {
       this.ngZone.run(() => {
         if (message === BroadcastInfo.UpdateAllMessages) {
           this.messages = this.peerService.getAllMessages();
-          console.log("YEAH");
-          const w = window;
-          setTimeout(() => w.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
+          setTimeout(() => window.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
         } else if (message === BroadcastInfo.RoomName) {
           this.roomName = this.peerService.getRoomName();
           this.location.replaceState("/chat/" + this.roomName);
@@ -67,7 +69,6 @@ export class ChatComponent implements OnInit {
     this.peerService.sendMessage(this.messageToSend.value);
     this.messages = this.peerService.getAllMessages();
     this.messageForm.setValue({ messageToSend: "" });
-    const w = window;
-    setTimeout(() => w.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
+    setTimeout(() => window.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
   }
 }
