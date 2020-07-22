@@ -11,7 +11,7 @@ import { FormControl, FormGroup, NgForm, FormBuilder } from "@angular/forms";
 })
 export class ChatComponent implements OnInit {
   messageForm: FormGroup;
-  messageToSend: FormControl; 
+  messageToSend: FormControl;
   myPeerId: string;
   messages: any[] = [];
   roomName: string;
@@ -49,9 +49,10 @@ export class ChatComponent implements OnInit {
     this.showEmojiPicker = !this.showEmojiPicker;
   }
 
-  addEmoji(event) {
-    console.log(event);
-    this.messageToSend.patchValue(this.messageToSend.value + event.emoji.native);
+  addEmoji(event: any) {
+    this.messageToSend.patchValue(
+      this.messageToSend.value + event.emoji.native
+    );
   }
 
   subscribeToPeerServerEvents() {
