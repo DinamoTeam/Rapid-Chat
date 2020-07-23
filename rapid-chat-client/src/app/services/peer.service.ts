@@ -27,14 +27,14 @@ export class PeerService {
       secure: true,
       config: {
         iceServers: [
-          { url: 'stun:relay.backups.cz' },
+          { url: "stun:relay.backups.cz" },
           {
-            url: 'turn:relay.backups.cz',
-            username: 'webrtc',
-            credential: 'webrtc',
+            url: "turn:relay.backups.cz",
+            username: "webrtc",
+            credential: "webrtc",
           },
         ],
-      }
+      },
     }); // Connect to our own peerServer
     // this.peer = new Peer(); // Connect to default peerServer
     this.connectToPeerServer();
@@ -98,9 +98,15 @@ export class PeerService {
         this.requestOldMessages(conn);
       }
       // If we need to send this peer old chat messages
-      if (this.peerIdsToSendOldChatMessages.findIndex(id => id === conn.peer) !== -1) {
+      if (
+        this.peerIdsToSendOldChatMessages.findIndex(
+          (id) => id === conn.peer
+        ) !== -1
+      ) {
         this.sendOldMessages(conn);
-        this.peerIdsToSendOldChatMessages = this.peerIdsToSendOldChatMessages.filter(id => id !== conn.peer);
+        this.peerIdsToSendOldChatMessages = this.peerIdsToSendOldChatMessages.filter(
+          (id) => id !== conn.peer
+        );
       }
     }); // When the connection first establish
     conn.on(ConnectionEvent.Data, (message) =>
@@ -109,17 +115,16 @@ export class PeerService {
     conn.on(ConnectionEvent.Close, () => this.handleConnectionClose(conn)); // either us or the other peer close the connection
   }
 
-  private handleMessageFromPeer(messageJson: string, fromConn: any) {
-    const message: Message = JSON.parse(messageJson);
+  private handleMessageFromPeer(message: Message, fromConn: any) {
     switch (message.messageType) {
       case MessageType.Message:
-        this.addUniqueMessages([message], this.previousMessages);
+        this.previousMessages.push(message);
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         break;
       case MessageType.AllMessages:
         this.hasReceivedAllMessages = true;
         const messages: Message[] = JSON.parse(message.content);
-        this.addUniqueMessages(messages, this.previousMessages);
+        messages.forEach((m) => this.previousMessages.push(m));
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         this.connectToTheRestInRoom(fromConn.peer);
         break;
@@ -129,7 +134,11 @@ export class PeerService {
             "I haven't received allMessages yet. Can't send to that peer"
           );
         } else {
-          if (this.connectionsIAmHolding.findIndex(conn => conn.peer === fromConn.peer) !== -1) {
+          if (
+            this.connectionsIAmHolding.findIndex(
+              (conn) => conn.peer === fromConn.peer
+            ) !== -1
+          ) {
             this.sendOldMessages(fromConn); // Send now
           } else {
             this.peerIdsToSendOldChatMessages.push(fromConn.peer); // Send when open
@@ -184,7 +193,7 @@ export class PeerService {
       null,
       null
     );
-    conn.send(JSON.stringify(message));
+    conn.send(message);
   }
 
   private sendOldMessages(conn: any) {
@@ -194,7 +203,7 @@ export class PeerService {
       this.peer.id,
       conn.peer
     );
-    conn.send(JSON.stringify(message));
+    conn.send(message);
   }
   //*************************************************************
 
@@ -202,23 +211,6 @@ export class PeerService {
     list.forEach((obj) => {
       if (listToBeAddedTo.indexOf(obj) === -1) {
         listToBeAddedTo.push(obj);
-      }
-    });
-  }
-
-  private addUniqueMessages(list: Message[], listToBeAddedTo: Message[]) {
-    list.forEach((message) => {
-      let weHadThatMessage = false;
-      for (let i = 0; i < listToBeAddedTo.length; i++) {
-        if (
-          listToBeAddedTo[i].fromPeerId === message.fromPeerId
-        ) {
-          weHadThatMessage = true;
-          break;
-        }
-      }
-      if (!weHadThatMessage) {
-        listToBeAddedTo.push(message);
       }
     });
   }
@@ -251,8 +243,7 @@ export class PeerService {
   }
 
   sendMessage(content: string) {
-    if (content.length === 0)
-      return;
+    if (content.length === 0) return;
 
     this.previousMessages.push(
       new Message(content, MessageType.Message, this.peer.id, null)
@@ -265,8 +256,8 @@ export class PeerService {
         this.peer.id,
         conn.peer
       );
-      const messageInJson = JSON.stringify(messageToSend);
-      conn.send(messageInJson);
+
+      conn.send(messageToSend);
     });
   }
 
@@ -286,8 +277,8 @@ export class PeerService {
   hasReceivedMessage(message: Message): boolean {
     return (
       this.previousMessages.find(
-        (mes) =>
-          mes.fromPeerId === message.fromPeerId) != null
+        (mes) => mes.fromPeerId === message.fromPeerId
+      ) != null
     );
   }
 

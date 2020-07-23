@@ -60,20 +60,27 @@ export class ChatComponent implements OnInit {
     const blob = new Blob(event.target.files, { type: file.type });
     console.log(blob);
 
-    this.peerService.sendImage({ file: blob, filename: file.name, filetype: file.type});
+    this.peerService.sendImage({
+      file: blob,
+      filename: file.name,
+      filetype: file.type,
+    });
   }
-
 
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
     this.peerService.infoBroadcasted.subscribe((message: any) => {
       this.ngZone.run(() => {
-        if (message === BroadcastInfo.UpdateAllMessages) {
-          this.messages = this.peerService.getAllMessages();
-          setTimeout(() => window.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
-        } else if (message === BroadcastInfo.RoomName) {
-          this.roomName = this.peerService.getRoomName();
-          this.location.replaceState("/chat/" + this.roomName);
+        switch (message) {
+          case BroadcastInfo.UpdateAllMessages:
+            this.messages = this.peerService.getAllMessages();
+            setTimeout(() => window.scrollTo(0, 1000000), 10); // Wait 10 milli sec for message to be updated
+            break;
+          case BroadcastInfo.RoomName:
+            this.roomName = this.peerService.getRoomName();
+            this.location.replaceState("/chat/" + this.roomName);
+            break;
+          default:
         }
       });
     });
