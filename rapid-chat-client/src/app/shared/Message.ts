@@ -1,11 +1,11 @@
 export class Message {
-  content: string;
+  content: any;
   messageType: MessageType;
   fromPeerId: string;
   toPeerId: string;
   time: number;
   constructor(
-    content: string,
+    content: any,
     messageType: MessageType,
     fromPeerId: string,
     toPeerId: string,
@@ -25,6 +25,7 @@ export class Message {
 
 export const enum MessageType {
   Message = 0,
-  AllMessages = 1,
-  RequestAllMessages = 2,
+  ImageFile = 1,
+  AllMessages = 2,
+  RequestAllMessages = 3,
 }

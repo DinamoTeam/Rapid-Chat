@@ -55,6 +55,15 @@ export class ChatComponent implements OnInit {
     );
   }
 
+  uploadImage(event: any) {
+    const file = event.target.files[0];
+    const blob = new Blob(event.target.files, { type: file.type });
+    console.log(blob);
+
+    this.peerService.sendImage({ file: blob, filename: file.name, filetype: file.type});
+  }
+
+
   subscribeToPeerServerEvents() {
     // In peer.service.ts use meessageReceived.emit(<data here>) to catch here
     this.peerService.infoBroadcasted.subscribe((message: any) => {

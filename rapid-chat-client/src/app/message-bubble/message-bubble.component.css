@@ -1,10 +1,10 @@
 .otherPplMessage {
-  background-color: #0375B4;
-  color: white;
+  background-color: #EFEFEF;
 }
 
 .myMessage {
-  background-color: #EFEFEF;
+  color: white;
+  background-color: #0375B4;
 }
 
 .card {

@@ -255,9 +255,8 @@ export class PeerService {
   }
 
   sendMessage(content: string) {
-    if (content.length === 0) {
+    if (content.length === 0)
       return;
-    }
 
     this.previousMessages.push(
       new Message(content, MessageType.Message, this.peer.id, null, this.time)
@@ -267,6 +266,21 @@ export class PeerService {
       const messageToSend = new Message(
         content,
         MessageType.Message,
+        this.peer.id,
+        conn.peer,
+        this.time
+      );
+      const messageInJson = JSON.stringify(messageToSend);
+      conn.send(messageInJson);
+    });
+    this.time++;
+  }
+
+  sendImage(content: any) {
+    this.connectionsIAmHolding.forEach((conn) => {
+      const messageToSend = new Message(
+        content,
+        MessageType.ImageFile,
         this.peer.id,
         conn.peer,
         this.time
