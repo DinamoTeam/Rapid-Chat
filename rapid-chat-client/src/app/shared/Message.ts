@@ -3,23 +3,18 @@ export class Message {
   messageType: MessageType;
   fromPeerId: string;
   toPeerId: string;
-  time: number;
+
   constructor(
     content: any,
     messageType: MessageType,
     fromPeerId: string,
-    toPeerId: string,
-    time: number
+    toPeerId: string
   ) {
     this.content = content;
     this.messageType = messageType;
     this.fromPeerId = fromPeerId;
     this.toPeerId = toPeerId;
-    this.time = time;
-  }
 
-  toString(): string {
-    return "Time: " + this.time;
   }
 }
 

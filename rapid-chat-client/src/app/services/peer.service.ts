@@ -8,7 +8,6 @@ declare const Peer: any;
   providedIn: "root",
 })
 export class PeerService {
-  private time = 0;
   private peer: any;
   private roomName: string;
   private connToGetOldMessages: any;
@@ -183,8 +182,7 @@ export class PeerService {
       null,
       MessageType.RequestAllMessages,
       null,
-      null,
-      this.time++
+      null
     );
     conn.send(JSON.stringify(message));
   }
@@ -194,8 +192,7 @@ export class PeerService {
       JSON.stringify(this.previousMessages),
       MessageType.AllMessages,
       this.peer.id,
-      conn.peer,
-      this.time++
+      conn.peer
     );
     conn.send(JSON.stringify(message));
   }
@@ -214,8 +211,7 @@ export class PeerService {
       let weHadThatMessage = false;
       for (let i = 0; i < listToBeAddedTo.length; i++) {
         if (
-          listToBeAddedTo[i].fromPeerId === message.fromPeerId &&
-          listToBeAddedTo[i].time === message.time
+          listToBeAddedTo[i].fromPeerId === message.fromPeerId
         ) {
           weHadThatMessage = true;
           break;
@@ -259,7 +255,7 @@ export class PeerService {
       return;
 
     this.previousMessages.push(
-      new Message(content, MessageType.Message, this.peer.id, null, this.time)
+      new Message(content, MessageType.Message, this.peer.id, null)
     );
 
     this.connectionsIAmHolding.forEach((conn) => {
@@ -267,13 +263,11 @@ export class PeerService {
         content,
         MessageType.Message,
         this.peer.id,
-        conn.peer,
-        this.time
+        conn.peer
       );
       const messageInJson = JSON.stringify(messageToSend);
       conn.send(messageInJson);
     });
-    this.time++;
   }
 
   sendImage(content: any) {
@@ -282,21 +276,18 @@ export class PeerService {
         content,
         MessageType.ImageFile,
         this.peer.id,
-        conn.peer,
-        this.time
+        conn.peer
       );
       const messageInJson = JSON.stringify(messageToSend);
       conn.send(messageInJson);
     });
-    this.time++;
   }
 
   hasReceivedMessage(message: Message): boolean {
     return (
       this.previousMessages.find(
         (mes) =>
-          mes.fromPeerId === message.fromPeerId && mes.time === message.time
-      ) != null
+          mes.fromPeerId === message.fromPeerId) != null
     );
   }
 
