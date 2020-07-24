@@ -121,6 +121,16 @@ export class PeerService {
         this.previousMessages.push(message);
         this.infoBroadcasted.emit(BroadcastInfo.UpdateAllMessages);
         break;
+      case MessageType.ImageFile:
+        console.log(message);
+        const data = message.content;
+        if (data.filetype.includes('image')) {
+          var binaryData = [];
+          binaryData.push(data.file);
+          const imgURL = window.URL.createObjectURL(new Blob(binaryData, { type: "image/*" }));
+          console.log(imgURL);
+        }
+        break;
       case MessageType.AllMessages:
         this.hasReceivedAllMessages = true;
         const messages: Message[] = JSON.parse(message.content);
@@ -269,8 +279,8 @@ export class PeerService {
         this.peer.id,
         conn.peer
       );
-      const messageInJson = JSON.stringify(messageToSend);
-      conn.send(messageInJson);
+
+      conn.send(messageToSend);
     });
   }
 
